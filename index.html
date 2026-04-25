@@ -1,0 +1,3376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Native Final Boss</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #080810;
+  --surface: #10101e;
+  --card: #16162a;
+  --border: #2a2a4a;
+  --neon: #00ffcc;
+  --neon2: #ff00aa;
+  --neon3: #ffcc00;
+  --neon4: #00aaff;
+  --red: #ff3366;
+  --green: #00ff88;
+  --text: #e0e0ff;
+  --muted: #5555aa;
+  --pixel: 'Press Start 2P', monospace;
+  --ui: 'Rajdhani', sans-serif;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Scanline effect */
+body::after {
+  content:'';
+  position:fixed;
+  inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px);
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* Screens */
+.screen { display:none; min-height:100vh; }
+.screen.active { display:flex; flex-direction:column; }
+
+/* ===== TITLE SCREEN ===== */
+#titleScreen {
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:40px 20px;
+  background: radial-gradient(ellipse at center, #1a0030 0%, #080810 70%);
+  position:relative;
+  overflow:hidden;
+}
+
+.stars {
+  position:absolute;
+  inset:0;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, white, transparent),
+    radial-gradient(1px 1px at 80% 10%, white, transparent),
+    radial-gradient(1px 1px at 50% 60%, white, transparent),
+    radial-gradient(1px 1px at 10% 80%, white, transparent),
+    radial-gradient(1px 1px at 90% 70%, white, transparent),
+    radial-gradient(1px 1px at 35% 15%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 65% 85%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(2px 2px at 45% 45%, rgba(0,255,204,0.4), transparent),
+    radial-gradient(2px 2px at 75% 25%, rgba(255,0,170,0.4), transparent);
+  animation: twinkle 3s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity:0.6; }
+  to { opacity:1; }
+}
+
+.title-logo {
+  font-family: var(--pixel);
+  font-size: clamp(14px, 4vw, 24px);
+  color: var(--neon);
+  text-shadow: 0 0 20px var(--neon), 0 0 40px var(--neon), 0 0 80px var(--neon);
+  line-height: 1.6;
+  margin-bottom: 8px;
+  animation: flicker 4s ease-in-out infinite;
+}
+
+.title-sub {
+  font-family: var(--pixel);
+  font-size: clamp(8px, 2vw, 12px);
+  color: var(--neon2);
+  text-shadow: 0 0 10px var(--neon2);
+  margin-bottom: 48px;
+}
+
+@keyframes flicker {
+  0%,95%,100%{opacity:1;}
+  96%{opacity:0.8;}
+  97%{opacity:1;}
+  98%{opacity:0.6;}
+  99%{opacity:1;}
+}
+
+/* Pixel villain on title */
+.title-villain {
+  width:120px;
+  height:120px;
+  margin: 0 auto 32px;
+  image-rendering: pixelated;
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-12px);}
+}
+
+.villain-canvas { image-rendering: pixelated; }
+
+.press-start {
+  font-family: var(--pixel);
+  font-size: 10px;
+  color: var(--neon3);
+  animation: blink 1s step-end infinite;
+  margin-bottom: 32px;
+  cursor:pointer;
+}
+
+@keyframes blink {
+  0%,100%{opacity:1;}
+  50%{opacity:0;}
+}
+
+.title-btn {
+  background: var(--neon);
+  color: #000;
+  border:none;
+  font-family: var(--pixel);
+  font-size: 11px;
+  padding: 16px 32px;
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  box-shadow: 0 0 20px var(--neon), 4px 4px 0 #005544;
+  transition: transform 0.1s, box-shadow 0.1s;
+  margin: 8px;
+}
+
+.title-btn:hover {
+  transform: translate(-2px,-2px);
+  box-shadow: 0 0 30px var(--neon), 6px 6px 0 #005544;
+}
+
+.title-btn:active {
+  transform: translate(2px,2px);
+  box-shadow: 0 0 10px var(--neon), 2px 2px 0 #005544;
+}
+
+.title-btn.secondary {
+  background: transparent;
+  color: var(--neon2);
+  border: 2px solid var(--neon2);
+  box-shadow: 0 0 10px var(--neon2), 4px 4px 0 #550033;
+}
+
+/* ===== ONBOARDING ===== */
+#onboardScreen {
+  padding: 40px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  width:100%;
+}
+
+.ob-title {
+  font-family: var(--pixel);
+  font-size: 14px;
+  color: var(--neon);
+  margin-bottom: 32px;
+  text-shadow: 0 0 10px var(--neon);
+}
+
+.ob-question {
+  margin-bottom: 32px;
+}
+
+.ob-q-label {
+  font-family: var(--pixel);
+  font-size: 9px;
+  color: var(--neon3);
+  margin-bottom: 16px;
+  line-height: 1.8;
+}
+
+.ob-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ob-opt {
+  background: var(--card);
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-family: var(--ui);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 14px 20px;
+  cursor:pointer;
+  text-align:left;
+  transition: all 0.15s;
+  letter-spacing:0.5px;
+}
+
+.ob-opt:hover, .ob-opt.selected {
+  border-color: var(--neon);
+  color: var(--neon);
+  background: rgba(0,255,204,0.05);
+  box-shadow: 0 0 10px rgba(0,255,204,0.2);
+}
+
+.ob-next {
+  background: var(--neon);
+  color: #000;
+  border:none;
+  font-family: var(--pixel);
+  font-size: 10px;
+  padding: 14px 28px;
+  cursor:pointer;
+  margin-top: 24px;
+  display:none;
+}
+
+.ob-next.visible { display:block; }
+
+/* ===== DASHBOARD ===== */
+#dashScreen {
+  padding: 0;
+}
+
+.dash-header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dash-logo {
+  font-family: var(--pixel);
+  font-size: 10px;
+  color: var(--neon);
+  text-shadow: 0 0 8px var(--neon);
+}
+
+.dash-xp-bar-wrap {
+  flex:1;
+  max-width:200px;
+}
+
+.dash-level-label {
+  font-family: var(--pixel);
+  font-size: 7px;
+  color: var(--neon3);
+  margin-bottom: 4px;
+}
+
+.xp-bar-bg {
+  background: var(--border);
+  height: 8px;
+  border-radius: 0;
+  overflow:hidden;
+}
+
+.xp-bar-fill {
+  height:100%;
+  background: linear-gradient(90deg, var(--neon), var(--neon4));
+  transition: width 1s ease;
+  box-shadow: 0 0 8px var(--neon);
+}
+
+.dash-streak {
+  font-family: var(--pixel);
+  font-size: 8px;
+  color: var(--neon3);
+  text-align:center;
+}
+
+.dash-body {
+  padding: 20px;
+  display:flex;
+  flex-direction:column;
+  gap: 20px;
+  max-width: 700px;
+  margin: 0 auto;
+  width:100%;
+}
+
+/* Avatar + Villain */
+.av-villain-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--card);
+  border: 2px solid var(--border);
+  padding: 16px;
+  gap: 12px;
+}
+
+.av-side, .vi-side {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+}
+
+.av-label, .vi-label {
+  font-family: var(--pixel);
+  font-size: 7px;
+}
+
+.av-label { color: var(--neon4); }
+.vi-label { color: var(--red); }
+
+.av-name, .vi-name {
+  font-family: var(--pixel);
+  font-size: 8px;
+  color: var(--text);
+}
+
+.vs-center {
+  font-family: var(--pixel);
+  font-size: 20px;
+  color: var(--neon3);
+  text-shadow: 0 0 10px var(--neon3);
+}
+
+.hp-bar-wrap {
+  width: 100px;
+}
+
+.hp-label {
+  font-family: var(--pixel);
+  font-size: 6px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.hp-bar-bg {
+  background: var(--border);
+  height:6px;
+}
+
+.hp-bar-fill {
+  height:100%;
+  transition: width 1s ease;
+}
+
+.hp-bar-fill.player { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.hp-bar-fill.villain { background: var(--red); box-shadow: 0 0 6px var(--red); }
+
+/* Daily challenge card */
+.daily-card {
+  background: var(--card);
+  border: 2px solid var(--neon);
+  box-shadow: 0 0 20px rgba(0,255,204,0.1);
+  padding: 20px;
+}
+
+.daily-title {
+  font-family: var(--pixel);
+  font-size: 9px;
+  color: var(--neon);
+  margin-bottom: 12px;
+}
+
+.daily-rounds {
+  display:flex;
+  gap:8px;
+  margin-bottom:16px;
+}
+
+.round-pip {
+  flex:1;
+  height:6px;
+  background: var(--border);
+}
+
+.round-pip.done { background: var(--neon); box-shadow: 0 0 6px var(--neon); }
+.round-pip.active { background: var(--neon3); box-shadow: 0 0 6px var(--neon3); animation: pulse-pip 1s ease-in-out infinite; }
+
+@keyframes pulse-pip {
+  0%,100%{opacity:1;} 50%{opacity:0.4;}
+}
+
+.daily-desc {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.start-btn {
+  background: var(--neon);
+  color: #000;
+  border:none;
+  font-family: var(--pixel);
+  font-size: 10px;
+  padding: 14px 24px;
+  cursor:pointer;
+  width:100%;
+  box-shadow: 4px 4px 0 #005544;
+  transition: transform 0.1s;
+}
+
+.start-btn:hover { transform: translate(-1px,-1px); }
+.start-btn:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #005544; }
+
+/* Worlds */
+.worlds-title {
+  font-family: var(--pixel);
+  font-size: 9px;
+  color: var(--neon3);
+  margin-bottom: 12px;
+}
+
+.worlds-grid {
+  display:grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.world-card {
+  background: var(--card);
+  border: 2px solid var(--border);
+  padding: 14px;
+  cursor:pointer;
+  transition: all 0.15s;
+  position:relative;
+  overflow:hidden;
+}
+
+.world-card:hover {
+  border-color: var(--neon4);
+  box-shadow: 0 0 10px rgba(0,170,255,0.2);
+}
+
+.world-card.active-world {
+  border-color: var(--neon3);
+  box-shadow: 0 0 12px rgba(255,204,0,0.2);
+}
+
+.world-card.locked {
+  opacity:0.4;
+  cursor:not-allowed;
+}
+
+.world-icon { font-size:24px; margin-bottom:6px; }
+.world-name {
+  font-family: var(--pixel);
+  font-size: 7px;
+  color: var(--text);
+  line-height:1.6;
+}
+
+.world-lock {
+  position:absolute;
+  top:8px; right:8px;
+  font-size:12px;
+}
+
+/* Stats row */
+.stats-row {
+  display:grid;
+  grid-template-columns: repeat(3,1fr);
+  gap:10px;
+}
+
+.stat-box {
+  background: var(--card);
+  border: 2px solid var(--border);
+  padding: 14px;
+  text-align:center;
+}
+
+.stat-num {
+  font-family: var(--pixel);
+  font-size: 18px;
+  color: var(--neon);
+  text-shadow: 0 0 8px var(--neon);
+  display:block;
+  margin-bottom:6px;
+}
+
+.stat-label {
+  font-family: var(--pixel);
+  font-size: 6px;
+  color: var(--muted);
+  line-height:1.6;
+}
+
+/* ===== EXERCISE SCREEN ===== */
+#exerciseScreen {
+  padding: 0;
+  max-width:700px;
+  margin:0 auto;
+  width:100%;
+}
+
+.ex-header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 14px 20px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.ex-back {
+  background:none;
+  border:none;
+  color:var(--muted);
+  font-family:var(--pixel);
+  font-size:8px;
+  cursor:pointer;
+  padding:4px 8px;
+}
+.ex-back:hover { color:var(--text); }
+
+.ex-type-label {
+  font-family:var(--pixel);
+  font-size:8px;
+  color:var(--neon2);
+  flex:1;
+}
+
+.ex-round-label {
+  font-family:var(--pixel);
+  font-size:8px;
+  color:var(--neon3);
+}
+
+.ex-body {
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+
+.ex-world-badge {
+  display:inline-block;
+  background: rgba(0,170,255,0.1);
+  border: 1px solid var(--neon4);
+  color: var(--neon4);
+  font-family:var(--pixel);
+  font-size:7px;
+  padding:4px 10px;
+  margin-bottom:4px;
+}
+
+.ex-question {
+  background: var(--card);
+  border: 2px solid var(--border);
+  padding: 20px;
+}
+
+.ex-q-type {
+  font-family:var(--pixel);
+  font-size:7px;
+  color:var(--neon3);
+  margin-bottom:12px;
+}
+
+.ex-q-text {
+  font-size:17px;
+  font-weight:600;
+  line-height:1.7;
+  color:var(--text);
+}
+
+.ex-q-context {
+  margin-top:10px;
+  font-size:13px;
+  color:var(--muted);
+  font-style:italic;
+  line-height:1.6;
+}
+
+/* Options */
+.ex-options {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.ex-opt {
+  background: var(--card);
+  border: 2px solid var(--border);
+  color:var(--text);
+  font-family:var(--ui);
+  font-size:15px;
+  font-weight:600;
+  padding:14px 18px;
+  cursor:pointer;
+  text-align:left;
+  transition:all 0.15s;
+  line-height:1.5;
+}
+
+.ex-opt:hover:not(:disabled) {
+  border-color:var(--neon4);
+  color:var(--neon4);
+}
+
+.ex-opt.correct {
+  border-color:var(--green);
+  color:var(--green);
+  background:rgba(0,255,136,0.05);
+  box-shadow:0 0 10px rgba(0,255,136,0.2);
+}
+
+.ex-opt.wrong {
+  border-color:var(--red);
+  color:var(--red);
+  background:rgba(255,51,102,0.05);
+}
+
+.ex-opt:disabled { cursor:default; }
+
+/* Text input exercise */
+.ex-input-wrap {
+  position:relative;
+}
+
+.ex-textarea {
+  width:100%;
+  min-height:100px;
+  background:var(--card);
+  border:2px solid var(--border);
+  color:var(--text);
+  font-family:var(--ui);
+  font-size:15px;
+  padding:16px;
+  resize:vertical;
+  outline:none;
+  line-height:1.6;
+}
+
+.ex-textarea:focus { border-color:var(--neon4); }
+
+.ex-submit {
+  background:var(--neon2);
+  color:#000;
+  border:none;
+  font-family:var(--pixel);
+  font-size:9px;
+  padding:12px 20px;
+  cursor:pointer;
+  margin-top:10px;
+  box-shadow:3px 3px 0 #550033;
+}
+
+.ex-submit:hover { transform:translate(-1px,-1px); }
+.ex-submit:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+
+/* Feedback */
+.ex-feedback {
+  background:var(--card);
+  border:2px solid var(--border);
+  padding:18px;
+  display:none;
+}
+
+.ex-feedback.visible { display:block; }
+
+.fb-verdict {
+  font-family:var(--pixel);
+  font-size:12px;
+  margin-bottom:12px;
+}
+
+.fb-verdict.correct { color:var(--green); text-shadow:0 0 8px var(--green); }
+.fb-verdict.wrong { color:var(--red); text-shadow:0 0 8px var(--red); }
+
+.fb-explanation {
+  font-size:15px;
+  line-height:1.7;
+  color:var(--text);
+  margin-bottom:12px;
+}
+
+.fb-native {
+  background: rgba(0,255,136,0.05);
+  border-left:3px solid var(--green);
+  padding:12px 14px;
+  font-size:14px;
+  color:var(--green);
+  line-height:1.6;
+  margin-bottom:12px;
+}
+
+.fb-idiom-box {
+  background:rgba(255,204,0,0.05);
+  border:1px solid var(--neon3);
+  padding:12px 14px;
+  margin-bottom:12px;
+}
+
+.fb-idiom-label {
+  font-family:var(--pixel);
+  font-size:7px;
+  color:var(--neon3);
+  margin-bottom:6px;
+}
+
+.fb-idiom-text {
+  font-size:14px;
+  color:var(--neon3);
+  line-height:1.6;
+}
+
+.fb-xp {
+  font-family:var(--pixel);
+  font-size:10px;
+  color:var(--neon3);
+  text-align:right;
+}
+
+.next-btn {
+  background:var(--neon);
+  color:#000;
+  border:none;
+  font-family:var(--pixel);
+  font-size:9px;
+  padding:12px 20px;
+  cursor:pointer;
+  width:100%;
+  margin-top:12px;
+  box-shadow:4px 4px 0 #005544;
+}
+
+.next-btn:hover { transform:translate(-1px,-1px); }
+
+/* Loading state */
+.ex-loading {
+  text-align:center;
+  padding:40px;
+}
+
+.ex-loading-text {
+  font-family:var(--pixel);
+  font-size:8px;
+  color:var(--neon);
+  animation:pulse-text 1s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  0%,100%{opacity:0.3;} 50%{opacity:1;}
+}
+
+/* ===== ARCADE SCREEN ===== */
+#arcadeScreen {
+  align-items:center;
+  justify-content:center;
+  background: radial-gradient(ellipse at center, #001a0d 0%, #080810 70%);
+  padding:20px;
+}
+
+.arcade-header {
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.arcade-title {
+  font-family:var(--pixel);
+  font-size:14px;
+  color:var(--neon);
+  text-shadow:0 0 15px var(--neon);
+  margin-bottom:8px;
+}
+
+.arcade-subtitle {
+  font-family:var(--pixel);
+  font-size:8px;
+  color:var(--neon3);
+}
+
+.arcade-game-name {
+  font-family:var(--pixel);
+  font-size:10px;
+  color:var(--neon2);
+  margin-bottom:16px;
+  text-align:center;
+  text-shadow:0 0 8px var(--neon2);
+}
+
+#arcadeCanvas {
+  border:3px solid var(--neon);
+  box-shadow:0 0 30px var(--neon), 0 0 60px rgba(0,255,204,0.2);
+  display:block;
+  image-rendering:pixelated;
+  max-width:100%;
+}
+
+.arcade-controls {
+  margin-top:16px;
+  text-align:center;
+}
+
+.arcade-ctrl-label {
+  font-family:var(--pixel);
+  font-size:7px;
+  color:var(--muted);
+  margin-bottom:10px;
+}
+
+.arcade-btns {
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.arcade-btn {
+  background:var(--card);
+  border:2px solid var(--border);
+  color:var(--text);
+  font-family:var(--pixel);
+  font-size:8px;
+  padding:10px 16px;
+  cursor:pointer;
+  min-width:60px;
+}
+
+.arcade-btn:hover { border-color:var(--neon); color:var(--neon); }
+
+.arcade-score-display {
+  font-family:var(--pixel);
+  font-size:12px;
+  color:var(--neon3);
+  text-align:center;
+  margin-top:12px;
+}
+
+.arcade-skip {
+  background:none;
+  border:1px solid var(--muted);
+  color:var(--muted);
+  font-family:var(--pixel);
+  font-size:7px;
+  padding:8px 16px;
+  cursor:pointer;
+  margin-top:16px;
+  display:block;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.arcade-skip:hover { color:var(--text); border-color:var(--text); }
+
+/* ===== RESULTS SCREEN ===== */
+#resultsScreen {
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+  background: radial-gradient(ellipse at center, #001a1a 0%, #080810 70%);
+  text-align:center;
+}
+
+.results-title {
+  font-family:var(--pixel);
+  font-size:clamp(10px,3vw,16px);
+  color:var(--neon);
+  text-shadow:0 0 20px var(--neon);
+  margin-bottom:8px;
+}
+
+.results-score {
+  font-family:var(--pixel);
+  font-size:clamp(24px,8vw,56px);
+  color:var(--neon3);
+  text-shadow:0 0 30px var(--neon3);
+  margin:16px 0;
+}
+
+.results-xp {
+  font-family:var(--pixel);
+  font-size:12px;
+  color:var(--neon);
+  margin-bottom:24px;
+}
+
+.results-breakdown {
+  background:var(--card);
+  border:2px solid var(--border);
+  padding:20px;
+  margin-bottom:24px;
+  max-width:400px;
+  width:100%;
+  text-align:left;
+}
+
+.rb-title {
+  font-family:var(--pixel);
+  font-size:8px;
+  color:var(--neon3);
+  margin-bottom:16px;
+}
+
+.rb-item {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid var(--border);
+  font-size:14px;
+  font-weight:600;
+}
+
+.rb-item:last-child { border-bottom:none; }
+.rb-correct { color:var(--green); }
+.rb-wrong { color:var(--red); }
+
+/* Mirror moment */
+.mirror-box {
+  background:rgba(0,255,204,0.03);
+  border:2px solid var(--neon);
+  padding:20px;
+  margin-bottom:24px;
+  max-width:400px;
+  width:100%;
+  text-align:left;
+}
+
+.mirror-label {
+  font-family:var(--pixel);
+  font-size:7px;
+  color:var(--neon);
+  margin-bottom:12px;
+}
+
+.mirror-before {
+  font-size:13px;
+  color:var(--red);
+  margin-bottom:8px;
+  line-height:1.6;
+  font-style:italic;
+}
+
+.mirror-after {
+  font-size:13px;
+  color:var(--green);
+  line-height:1.6;
+}
+
+.mirror-arrow {
+  color:var(--muted);
+  margin:6px 0;
+  font-size:16px;
+}
+
+.results-btn {
+  background:var(--neon);
+  color:#000;
+  border:none;
+  font-family:var(--pixel);
+  font-size:10px;
+  padding:16px 32px;
+  cursor:pointer;
+  box-shadow:4px 4px 0 #005544;
+  margin:8px;
+}
+
+.results-btn:hover { transform:translate(-1px,-1px); }
+
+/* ===== PATTERN WARNING ===== */
+.pattern-alert {
+  background:rgba(255,204,0,0.05);
+  border:2px solid var(--neon3);
+  padding:16px;
+  margin-bottom:16px;
+  display:none;
+}
+
+.pattern-alert.visible { display:block; }
+
+.pa-label {
+  font-family:var(--pixel);
+  font-size:7px;
+  color:var(--neon3);
+  margin-bottom:8px;
+}
+
+.pa-text {
+  font-size:14px;
+  color:var(--text);
+  line-height:1.6;
+}
+
+/* Toast */
+.toast {
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:var(--card);
+  border:2px solid var(--neon);
+  color:var(--neon);
+  font-family:var(--pixel);
+  font-size:9px;
+  padding:12px 16px;
+  z-index:9998;
+  animation:slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+  box-shadow:0 0 20px rgba(0,255,204,0.3);
+  max-width:250px;
+  line-height:1.6;
+}
+
+@keyframes slideIn {
+  from{transform:translateX(100%);opacity:0;}
+  to{transform:translateX(0);opacity:1;}
+}
+
+@keyframes fadeOut {
+  to{opacity:0;transform:translateX(100%);}
+}
+
+/* Villain pixel art canvas */
+.pixel-canvas { image-rendering:pixelated; }
+
+/* Responsive */
+@media(max-width:480px){
+  .worlds-grid { grid-template-columns:1fr 1fr; }
+  .stats-row { grid-template-columns:repeat(3,1fr); }
+  .av-villain-row { flex-direction:column; gap:16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TITLE SCREEN -->
+<div id="titleScreen" class="screen active">
+  <div class="stars"></div>
+  <canvas id="villainTitleCanvas" class="villain-canvas" width="80" height="80" style="margin:0 auto 24px;display:block;image-rendering:pixelated;"></canvas>
+  <div class="title-logo">NATIVE<br>FINAL<br>BOSS</div>
+  <div class="title-sub">DEFEAT YOUR NON-NATIVE ENGLISH</div>
+  <div class="press-start" onclick="startGame()">► PRESS START ◄</div>
+  <button class="title-btn" onclick="startGame()">NEW GAME</button>
+  <button class="title-btn secondary" onclick="continueGame()">CONTINUE</button>
+</div>
+
+<!-- ONBOARDING SCREEN -->
+<div id="onboardScreen" class="screen">
+  <div class="ob-title">PLAYER SETUP</div>
+  <div id="obStep1" class="ob-question">
+    <div class="ob-q-label">WHAT IS YOUR CURRENT<br>ENGLISH LEVEL?</div>
+    <div class="ob-options">
+      <button class="ob-opt" data-val="beginner" onclick="selectOb(this,'level')">⚔ BEGINNER — I struggle with basics</button>
+      <button class="ob-opt" data-val="intermediate" onclick="selectOb(this,'level')">🗡 INTERMEDIATE — I get by but sound foreign</button>
+      <button class="ob-opt" data-val="advanced" onclick="selectOb(this,'level')">⚡ ADVANCED — I'm fluent but not native</button>
+    </div>
+    <button class="ob-next" id="obNext1" onclick="showObStep(2)">NEXT ►</button>
+  </div>
+  <div id="obStep2" class="ob-question" style="display:none">
+    <div class="ob-q-label">WHAT IS YOUR BIGGEST<br>WEAKNESS?</div>
+    <div class="ob-options">
+      <button class="ob-opt" data-val="direct_translation" onclick="selectOb(this,'weakness')">🔄 I translate directly from my language</button>
+      <button class="ob-opt" data-val="grammar" onclick="selectOb(this,'weakness')">📝 Grammar — articles, tenses, prepositions</button>
+      <button class="ob-opt" data-val="idioms" onclick="selectOb(this,'weakness')">💬 I sound too formal / textbook</button>
+      <button class="ob-opt" data-val="fluency" onclick="selectOb(this,'weakness')">⚡ I freeze when I need to express myself</button>
+    </div>
+    <button class="ob-next" id="obNext2" onclick="showObStep(3)">NEXT ►</button>
+  </div>
+  <div id="obStep3" class="ob-question" style="display:none">
+    <div class="ob-q-label">PICK YOUR FIRST WORLD</div>
+    <div class="ob-options">
+      <button class="ob-opt" data-val="briefing" onclick="selectOb(this,'world')">🏢 THE BRIEFING ROOM — Work & Marketing</button>
+      <button class="ob-opt" data-val="lineup" onclick="selectOb(this,'world')">🌊 THE LINEUP — Surf & Outdoor</button>
+      <button class="ob-opt" data-val="court" onclick="selectOb(this,'world')">🎾 THE COURT — Social & Banter</button>
+      <button class="ob-opt" data-val="pitch" onclick="selectOb(this,'world')">💼 THE PITCH — Negotiation & Persuasion</button>
+    </div>
+    <button class="ob-next" id="obNext3" onclick="finishOnboarding()">START GAME ►</button>
+  </div>
+</div>
+
+<!-- DASHBOARD SCREEN -->
+<div id="dashScreen" class="screen">
+  <div class="dash-header">
+    <div class="dash-logo">NFB</div>
+    <div class="dash-xp-bar-wrap">
+      <div class="dash-level-label">LVL <span id="dashLevel">1</span> — <span id="dashXPLabel">0/100 XP</span></div>
+      <div class="xp-bar-bg"><div class="xp-bar-fill" id="dashXPBar" style="width:0%"></div></div>
+    </div>
+    <div class="dash-streak">🔥 <span id="dashStreak">0</span><br>STREAK</div>
+  </div>
+
+  <div class="dash-body">
+    <!-- Avatar vs Villain -->
+    <div class="av-villain-row">
+      <div class="av-side">
+        <canvas id="avatarCanvas" width="64" height="64" class="pixel-canvas"></canvas>
+        <div class="av-label">YOU</div>
+        <div class="av-name" id="playerNameDisplay">PLAYER</div>
+        <div class="hp-bar-wrap">
+          <div class="hp-label">HP</div>
+          <div class="hp-bar-bg"><div class="hp-bar-fill player" id="playerHP" style="width:100%"></div></div>
+        </div>
+      </div>
+      <div class="vs-center">VS</div>
+      <div class="vi-side">
+        <canvas id="villainDashCanvas" width="64" height="64" class="pixel-canvas"></canvas>
+        <div class="vi-label">FINAL BOSS</div>
+        <div class="vi-name">THE NATIVE</div>
+        <div class="hp-bar-wrap">
+          <div class="hp-label">BOSS HP</div>
+          <div class="hp-bar-bg"><div class="hp-bar-fill villain" id="villainHP" style="width:100%"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily challenge -->
+    <div class="daily-card">
+      <div class="daily-title">⚔ DAILY CHALLENGE</div>
+      <div class="daily-rounds" id="phaseTrack">
+        <div class="round-pip active" id="pip0"></div>
+        <div class="round-pip" id="pip1"></div>
+        <div class="round-pip" id="pip2"></div>
+        <div class="round-pip" id="pip3"></div>
+        <div class="round-pip" id="pip4"></div>
+        <div class="round-pip" id="pip5"></div>
+        <div class="round-pip" id="pip6"></div>
+      </div>
+      <div class="daily-desc" id="dailyDesc">6 phases · ~35 min · Fresh content daily. Arcade break after each phase — your choice.</div>
+      <button class="start-btn" onclick="startChallenge()" id="challengeBtn">► BEGIN TODAY'S SESSION</button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <span class="stat-num" id="statCorrect">0</span>
+        <span class="stat-label">CORRECT<br>ANSWERS</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="statIdioms">0</span>
+        <span class="stat-label">IDIOMS<br>LEARNED</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="statDays">0</span>
+        <span class="stat-label">DAYS<br>PLAYED</span>
+      </div>
+    </div>
+
+    <!-- Worlds -->
+    <div>
+      <div class="worlds-title">🌍 WORLDS</div>
+      <div class="worlds-grid" id="worldsGrid">
+        <div class="world-card active-world" data-world="briefing" onclick="selectWorld('briefing')">
+          <div class="world-icon">🏢</div>
+          <div class="world-name">THE BRIEFING<br>ROOM</div>
+        </div>
+        <div class="world-card" data-world="lineup" onclick="selectWorld('lineup')">
+          <div class="world-icon">🌊</div>
+          <div class="world-name">THE<br>LINEUP</div>
+        </div>
+        <div class="world-card" data-world="court" onclick="selectWorld('court')">
+          <div class="world-icon">🎾</div>
+          <div class="world-name">THE<br>COURT</div>
+        </div>
+        <div class="world-card" data-world="pitch" onclick="selectWorld('pitch')">
+          <div class="world-icon">💼</div>
+          <div class="world-name">THE<br>PITCH</div>
+        </div>
+        <div class="world-card locked" data-world="feed">
+          <div class="world-icon">📱</div>
+          <div class="world-name">THE<br>FEED</div>
+          <div class="world-lock">🔒</div>
+        </div>
+        <div class="world-card locked" data-world="boss">
+          <div class="world-icon">💀</div>
+          <div class="world-name">BOSS<br>DOOR</div>
+          <div class="world-lock">🔒</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ARCADE BREAK SCREEN -->
+<div id="breakScreen" class="screen">
+  <canvas id="breakVillainC" width="80" height="80" class="villain-canvas" style="display:block;margin:40px auto 0;image-rendering:pixelated;"></canvas>
+  <div style="text-align:center;padding:24px;">
+    <div id="brkPhaseDone" style="font-family:var(--pixel);font-size:9px;color:var(--neon);margin-bottom:8px;">✓ WARM UP COMPLETE</div>
+    <div style="font-family:var(--pixel);font-size:clamp(11px,3.5vw,20px);color:var(--neon3);text-shadow:0 0 15px var(--neon3);margin-bottom:8px;">PHASE COMPLETE!</div>
+    <div id="brkXP" style="font-family:var(--pixel);font-size:10px;color:var(--green);margin-bottom:28px;">+40 XP</div>
+    <div style="display:flex;flex-direction:column;gap:11px;align-items:center;">
+      <button onclick="goArcadeBreak()" style="background:var(--neon);color:#000;border:none;font-family:var(--pixel);font-size:10px;padding:14px 28px;cursor:pointer;box-shadow:4px 4px 0 #005544;min-width:230px;">🎮 PLAY ARCADE GAME</button>
+      <button onclick="skipToNextPhase()" style="background:transparent;border:2px solid var(--muted);color:var(--muted);font-family:var(--pixel);font-size:8px;padding:11px 22px;cursor:pointer;min-width:230px;">► SKIP — CONTINUE SESSION</button>
+    </div>
+    <div id="brkNextLabel" style="font-family:var(--pixel);font-size:6px;color:var(--muted);margin-top:14px;">NEXT: WORLD STORY</div>
+  </div>
+</div>
+
+<!-- EXERCISE SCREEN -->
+<div id="exerciseScreen" class="screen">
+  <div class="ex-header">
+    <button class="ex-back" onclick="goToDash()">◄ BACK</button>
+    <div class="ex-type-label" id="exTypeLabel">LOGICAL GAME</div>
+    <div class="ex-round-label" id="exRoundLabel">ROUND 1/3</div>
+  </div>
+  <div class="ex-body">
+    <div id="exWorldBadge" class="ex-world-badge">🏢 THE BRIEFING ROOM</div>
+
+    <div class="ex-question" id="exQuestion">
+      <div class="ex-q-type" id="exQType">LOADING...</div>
+      <div class="ex-q-text" id="exQText"></div>
+      <div class="ex-q-context" id="exQContext"></div>
+    </div>
+
+    <div id="exOptionsWrap" class="ex-options"></div>
+    <div id="exInputWrap" style="display:none">
+      <textarea class="ex-textarea" id="exTextarea" placeholder="Type your answer here..."></textarea>
+      <button class="ex-submit" id="exSubmitBtn" onclick="submitTextAnswer()">SUBMIT ►</button>
+    </div>
+
+    <div class="ex-feedback" id="exFeedback">
+      <div class="fb-verdict" id="fbVerdict"></div>
+      <div class="fb-explanation" id="fbExplanation"></div>
+      <div class="fb-native" id="fbNative" style="display:none"></div>
+      <div class="fb-idiom-box" id="fbIdiomBox" style="display:none">
+        <div class="fb-idiom-label">⭐ IDIOM UNLOCKED</div>
+        <div class="fb-idiom-text" id="fbIdiomText"></div>
+      </div>
+      <div class="fb-xp" id="fbXP">+10 XP</div>
+      <button class="next-btn" onclick="nextRound()">NEXT ►</button>
+    </div>
+
+    <div class="pattern-alert" id="patternAlert">
+      <div class="pa-label">⚠ YOUR PATTERN</div>
+      <div class="pa-text" id="patternAlertText"></div>
+    </div>
+
+    <div class="ex-loading" id="exLoading" style="display:none">
+      <div class="ex-loading-text">GENERATING CHALLENGE...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ARCADE SCREEN -->
+<div id="arcadeScreen" class="screen">
+  <div class="arcade-header">
+    <div class="arcade-title">🎮 ARCADE REWARD</div>
+    <div class="arcade-subtitle">YOU EARNED THIS — PLAY FOR BONUS XP</div>
+  </div>
+  <div class="arcade-game-name" id="arcadeGameName">SNAKE</div>
+  <canvas id="arcadeCanvas" width="300" height="300"></canvas>
+  <div class="arcade-score-display">SCORE: <span id="arcadeScore">0</span></div>
+  <div class="arcade-controls">
+    <div class="arcade-ctrl-label" id="arcadeCtrlLabel">USE ARROW KEYS OR BUTTONS BELOW</div>
+    <div class="arcade-btns" id="arcadeBtns">
+      <button class="arcade-btn" onclick="arcadeInput('UP')">▲</button>
+      <button class="arcade-btn" onclick="arcadeInput('LEFT')">◄</button>
+      <button class="arcade-btn" onclick="arcadeInput('DOWN')">▼</button>
+      <button class="arcade-btn" onclick="arcadeInput('RIGHT')">►</button>
+    </div>
+  </div>
+  <button class="arcade-skip" onclick="skipArcade()">SKIP → GO TO RESULTS</button>
+</div>
+
+<!-- RESULTS SCREEN -->
+<div id="resultsScreen" class="screen">
+  <div class="results-title">CHALLENGE COMPLETE!</div>
+  <div class="results-score" id="resultsScore">3/3</div>
+  <div class="results-xp" id="resultsXP">+150 XP EARNED</div>
+
+  <div class="results-breakdown" id="resultsBreakdown"></div>
+
+  <div class="mirror-box">
+    <div class="mirror-label">🪞 TODAY'S MIRROR MOMENT</div>
+    <div class="mirror-before" id="mirrorBefore">Loading...</div>
+    <div class="mirror-arrow">↓</div>
+    <div class="mirror-after" id="mirrorAfter">Loading...</div>
+  </div>
+
+  <button class="results-btn" onclick="goToDash()">► BACK TO DASHBOARD</button>
+  <button class="results-btn" style="background:var(--neon2);box-shadow:4px 4px 0 #550033;" onclick="playArcade()">🎮 PLAY ARCADE</button>
+</div>
+
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  level: 1,
+  xp: 0,
+  xpToNext: 100,
+  streak: 0,
+  lastPlayed: null,
+  totalCorrect: 0,
+  idiomsLearned: 0,
+  daysPlayed: 0,
+  villainHP: 100,
+  playerHP: 100,
+  currentWorld: 'briefing',
+  profile: { level: 'intermediate', weakness: 'direct_translation' },
+  mistakePatterns: [],
+  sessionResults: [],
+  idiomsBank: [],
+  challengeRound: 0,
+  challengeDone: false,
+  arcadeXP: 0,
+};
+
+const WORLDS = {
+  briefing: { label: '🏢 THE BRIEFING ROOM', topics: ['marketing', 'copywriting', 'client emails', 'strategy meetings', 'campaign briefs'] },
+  lineup: { label: '🌊 THE LINEUP', topics: ['surfing', 'outdoor activities', 'weather', 'sport', 'travel'] },
+  court: { label: '🎾 THE COURT', topics: ['social situations', 'friends', 'small talk', 'banter', 'dating'] },
+  pitch: { label: '💼 THE PITCH', topics: ['negotiation', 'persuasion', 'sales', 'presenting ideas', 'leadership'] },
+  feed: { label: '📱 THE FEED', topics: ['internet slang', 'memes', 'pop culture', 'social media'] },
+  boss: { label: '💀 BOSS DOOR', topics: ['advanced idioms', 'complex grammar', 'native fluency'] },
+};
+
+const EXERCISE_TYPES = ['logical', 'grammar', 'idiom'];
+
+// ============================================================
+// PIXEL ART DRAWING
+// ============================================================
+function drawVillain(canvas, size = 1) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  // Simple pixel villain — suited native speaker with sunglasses
+  const px = Math.floor(w / 16);
+  const colors = {
+    skin: '#ffcc88',
+    hair: '#222',
+    suit: '#1a1a3a',
+    tie: '#ff3366',
+    glasses: '#00ffcc',
+    white: '#ffffff',
+    shadow: '#333',
+  };
+
+  function rect(x,y,ww,hh,color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x*px, y*px, ww*px, hh*px);
+  }
+
+  // Body / suit
+  rect(4,8,8,7,colors.suit);
+  // Tie
+  rect(7,9,2,5,colors.tie);
+  // Head
+  rect(4,2,8,6,colors.skin);
+  // Hair
+  rect(4,2,8,2,colors.hair);
+  rect(4,4,1,2,colors.hair);
+  rect(11,4,1,2,colors.hair);
+  // Sunglasses
+  rect(4,4,3,2,colors.glasses);
+  rect(9,4,3,2,colors.glasses);
+  rect(7,5,2,1,colors.shadow);
+  // Mouth — smirk
+  rect(6,7,1,1,colors.shadow);
+  rect(7,8,3,1,colors.shadow);
+  rect(9,7,1,1,colors.shadow);
+  // Arms
+  rect(2,9,2,4,colors.suit);
+  rect(12,9,2,4,colors.suit);
+  // Hands
+  rect(2,13,2,2,colors.skin);
+  rect(12,13,2,2,colors.skin);
+  // Legs
+  rect(4,15,3,3,colors.suit);
+  rect(9,15,3,3,colors.suit);
+
+  // Health-based tint
+  if (state.villainHP < 50) {
+    ctx.fillStyle = 'rgba(255,0,0,0.15)';
+    ctx.fillRect(0,0,w,h);
+  }
+}
+
+function drawAvatar(canvas) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  const px = Math.floor(w/16);
+  const lvl = state.level;
+
+  // Avatar evolves with level
+  const skinTones = ['#ffcc88','#f0b070','#e09060','#d08050'];
+  const skin = skinTones[Math.min(Math.floor(lvl/15), skinTones.length-1)];
+
+  // Outfit based on level
+  const outfitColor = lvl < 10 ? '#444466' : lvl < 25 ? '#224488' : lvl < 40 ? '#228844' : '#886622';
+  const hairColor = '#333';
+
+  function rect(x,y,ww,hh,color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x*px, y*px, ww*px, hh*px);
+  }
+
+  // Body
+  rect(4,8,8,7,outfitColor);
+  // Head
+  rect(4,2,8,6,skin);
+  // Hair
+  rect(4,2,8,2,hairColor);
+  // Eyes — get more confident with levels
+  const eyeColor = lvl >= 20 ? '#00ffcc' : '#333';
+  rect(5,4,2,2,eyeColor);
+  rect(9,4,2,2,eyeColor);
+  // Mouth — from confused to confident
+  if (lvl < 5) {
+    rect(6,7,4,1,'#666'); // flat confused
+  } else if (lvl < 20) {
+    rect(6,7,4,1,'#cc8844'); // slight smile
+    rect(5,7,1,1,'#cc8844');
+  } else {
+    rect(5,7,6,1,'#cc8844'); // big smile
+    rect(5,6,1,1,'#cc8844');
+    rect(10,6,1,1,'#cc8844');
+  }
+  // Arms
+  rect(2,9,2,4,outfitColor);
+  rect(12,9,2,4,outfitColor);
+  // Hands
+  rect(2,13,2,2,skin);
+  rect(12,13,2,2,skin);
+  // Legs
+  rect(4,15,3,3,'#333');
+  rect(9,15,3,3,'#333');
+
+  // Level badge
+  if (lvl >= 10) {
+    ctx.fillStyle = '#ffcc00';
+    ctx.fillRect(10*px, 0, 6*px, 4*px);
+    ctx.fillStyle = '#000';
+    ctx.font = `${px*2}px "Press Start 2P"`;
+    ctx.fillText(lvl, 10.5*px, 3*px);
+  }
+}
+
+// ============================================================
+// SAVE / LOAD
+// ============================================================
+function saveState() {
+  localStorage.setItem('nfb_state', JSON.stringify(state));
+}
+
+function loadState() {
+  const saved = localStorage.getItem('nfb_state');
+  if (saved) {
+    state = { ...state, ...JSON.parse(saved) };
+    return true;
+  }
+  return false;
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  showScreen('onboardScreen');
+}
+
+function continueGame() {
+  if (loadState()) {
+    showScreen('dashScreen');
+    updateDash();
+  } else {
+    showScreen('onboardScreen');
+  }
+}
+
+function goToDash() {
+  stopArcade();
+  showScreen('dashScreen');
+  updateDash();
+}
+
+// ============================================================
+// ONBOARDING
+// ============================================================
+let obSelections = {};
+
+function selectOb(btn, key) {
+  const parent = btn.closest('.ob-options');
+  parent.querySelectorAll('.ob-opt').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  obSelections[key] = btn.dataset.val;
+
+  const stepMap = { level: 'obNext1', weakness: 'obNext2', world: 'obNext3' };
+  document.getElementById(stepMap[key]).classList.add('visible');
+}
+
+function showObStep(n) {
+  document.getElementById('obStep1').style.display = 'none';
+  document.getElementById('obStep2').style.display = 'none';
+  document.getElementById('obStep3').style.display = 'none';
+  document.getElementById(`obStep${n}`).style.display = 'block';
+}
+
+function finishOnboarding() {
+  if (!obSelections.world) return;
+  state.profile.level = obSelections.level || 'intermediate';
+  state.profile.weakness = obSelections.weakness || 'direct_translation';
+  state.currentWorld = obSelections.world || 'briefing';
+  state.daysPlayed = 1;
+  saveState();
+  showScreen('dashScreen');
+  updateDash();
+  showToast('WELCOME, CHALLENGER! 🔥');
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function updateDash() {
+  document.getElementById('dashLevel').textContent = state.level;
+  document.getElementById('dashXPLabel').textContent = `${state.xp}/${state.xpToNext} XP`;
+  const pct = Math.min(100, (state.xp / state.xpToNext) * 100);
+  document.getElementById('dashXPBar').style.width = pct + '%';
+  document.getElementById('dashStreak').textContent = state.streak;
+  document.getElementById('statCorrect').textContent = state.totalCorrect;
+  document.getElementById('statIdioms').textContent = state.idiomsLearned;
+  document.getElementById('statDays').textContent = state.daysPlayed;
+
+  // HP bars
+  document.getElementById('playerHP').style.width = state.playerHP + '%';
+  document.getElementById('villainHP').style.width = state.villainHP + '%';
+
+  // Draw pixel art
+  drawAvatar(document.getElementById('avatarCanvas'));
+  drawVillain(document.getElementById('villainDashCanvas'));
+  drawVillain(document.getElementById('villainTitleCanvas'));
+
+  // World highlight
+  document.querySelectorAll('.world-card:not(.locked)').forEach(c => {
+    c.classList.toggle('active-world', c.dataset.world === state.currentWorld);
+  });
+
+  // World badge
+  const wb = WORLDS[state.currentWorld];
+  if (wb) document.getElementById('exWorldBadge').textContent = wb.label;
+
+  // Challenge state
+  if (state.challengeDone) {
+    document.getElementById('challengeBtn').textContent = '✓ CHALLENGE COMPLETE — COME BACK TOMORROW';
+    document.getElementById('challengeBtn').disabled = true;
+    document.getElementById('dailyDesc').textContent = 'You crushed it today. The boss felt that one.';
+    document.getElementById('pip0').className = 'round-pip done';
+    document.getElementById('pip1').className = 'round-pip done';
+    document.getElementById('pip2').className = 'round-pip done';
+  }
+}
+
+function selectWorld(world) {
+  const card = document.querySelector(`[data-world="${world}"]`);
+  if (card && card.classList.contains('locked')) {
+    showToast('🔒 UNLOCK BY LEVELING UP!');
+    return;
+  }
+  state.currentWorld = world;
+  saveState();
+  updateDash();
+  showToast(`WORLD SELECTED: ${WORLDS[world]?.label}`);
+}
+
+// ============================================================
+// EXERCISE ENGINE
+// ============================================================
+let currentExercise = null;
+let roundIndex = 0;
+let sessionCorrect = 0;
+let sessionResults = [];
+
+async function startChallenge() {
+  if (state.challengeDone) return;
+  roundIndex = 0;
+  sessionCorrect = 0;
+  sessionResults = [];
+  showScreen('exerciseScreen');
+  await loadExercise();
+}
+
+async function loadExercise() {
+  const type = EXERCISE_TYPES[roundIndex];
+  const world = WORLDS[state.currentWorld];
+
+  document.getElementById('exRoundLabel').textContent = `ROUND ${roundIndex+1}/3`;
+  document.getElementById('exTypeLabel').textContent = type === 'logical' ? '🧠 LOGICAL GAME' : type === 'grammar' ? '📝 GRAMMAR GAME' : '💬 IDIOM CHALLENGE';
+  document.getElementById('exWorldBadge').textContent = world.label;
+  document.getElementById('exFeedback').classList.remove('visible');
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exInputWrap').style.display = 'none';
+  document.getElementById('exLoading').style.display = 'block';
+  document.getElementById('exQuestion').style.opacity = '0.3';
+  document.getElementById('patternAlert').classList.remove('visible');
+
+  const topic = world.topics[Math.floor(Math.random() * world.topics.length)];
+  const weakness = state.profile.weakness;
+  const level = state.profile.level;
+  const recentMistakes = state.mistakePatterns.slice(-3).join(', ') || 'none yet';
+
+  const prompt = `You are an English coach for a Portuguese native speaker working in English 70% of the day.
+
+Player profile:
+- Level: ${level}
+- Main weakness: ${weakness}
+- Recent mistake patterns: ${recentMistakes}
+- World/topic: ${topic}
+- Exercise type: ${type}
+
+Generate a ${type} English exercise about "${topic}". Return ONLY valid JSON:
+
+${type === 'logical' ? `{
+  "type": "logical",
+  "qtype": "WHAT WOULD A NATIVE SAY?",
+  "question": "Describe a situation (2-3 sentences) in the context of ${topic}. End with: What would a native English speaker say here?",
+  "context": "Brief scenario context",
+  "options": ["Option A — natural native phrasing", "Option B — Portuguese-influenced translation", "Option C — too formal/textbook", "Option D — another plausible wrong answer"],
+  "correct": 0,
+  "explanation": "Why option A is correct and why the others are wrong. Be specific about the Portuguese translation pattern.",
+  "nativeVersion": "The correct answer restated naturally",
+  "idiom": "One native idiom or expression used in this context with its meaning",
+  "patternWarning": "If this exposes a common PT→EN mistake, name it briefly"
+}` : type === 'grammar' ? `{
+  "type": "grammar",
+  "qtype": "SPOT THE MISTAKE",
+  "question": "A sentence with exactly one grammar mistake that Portuguese speakers typically make. The sentence should be about ${topic}.",
+  "context": "Why this mistake is common for Portuguese speakers",
+  "options": ["Corrected version", "Wrong fix — different mistake", "Wrong fix — overcorrection", "Original wrong sentence (no change)"],
+  "correct": 0,
+  "explanation": "What the mistake was, why it happens when translating from Portuguese, and the grammar rule.",
+  "nativeVersion": "The fully correct sentence",
+  "idiom": null,
+  "patternWarning": "Name this grammar pattern briefly"
+}` : `{
+  "type": "idiom",
+  "qtype": "DECODE THE NATIVE",
+  "question": "Use this idiom naturally in a sentence about ${topic}: choose a real, useful English idiom. Then ask what it means.",
+  "context": "The full sentence using the idiom in context",
+  "options": ["Correct meaning", "Plausible wrong meaning", "Another wrong meaning", "Literal translation (always wrong)"],
+  "correct": 0,
+  "explanation": "What the idiom means, its origin, and when to use it. Give a second example sentence.",
+  "nativeVersion": "How to use this idiom yourself in the context of ${topic}",
+  "idiom": "IDIOM NAME: meaning and usage tip",
+  "patternWarning": null
+}`}
+
+Rules: Make it intelligent, not infantile. Use real situations. For idiom exercises, pick idioms that are genuinely useful in professional or social life. Return ONLY JSON, no markdown.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content.find(b => b.type === 'text')?.text || '';
+    const clean = raw.replace(/```json|```/g,'').trim();
+    currentExercise = JSON.parse(clean);
+    renderExercise(currentExercise);
+  } catch(e) {
+    console.error(e);
+    // Fallback exercise
+    currentExercise = getFallbackExercise(type, topic);
+    renderExercise(currentExercise);
+  } finally {
+    document.getElementById('exLoading').style.display = 'none';
+    document.getElementById('exQuestion').style.opacity = '1';
+  }
+}
+
+function getFallbackExercise(type, topic) {
+  if (type === 'idiom') return {
+    type:'idiom', qtype:'DECODE THE NATIVE',
+    question:'What does "to bite the bullet" mean?',
+    context:'She knew the presentation would be tough, but she bit the bullet and went ahead.',
+    options:['To endure something difficult and unpleasant','To eat something sharp','To be very hungry','To shoot a weapon'],
+    correct:0,
+    explanation:'"Bite the bullet" means to endure a painful or difficult situation. Originally from surgery before anaesthesia. Use it when you push through something hard.',
+    nativeVersion:'I just have to bite the bullet and finish this report tonight.',
+    idiom:'BITE THE BULLET: force yourself through something difficult',
+    patternWarning:null
+  };
+  if (type === 'grammar') return {
+    type:'grammar', qtype:'SPOT THE MISTAKE',
+    question:'She don\'t know the answer to the question.',
+    context:'Subject-verb agreement with third person singular is a common PT→EN mistake.',
+    options:['She doesn\'t know the answer to the question.','She don\'t knows the answer.','She not know the answer.','She don\'t know the answer to the question.'],
+    correct:0,
+    explanation:'"Don\'t" with third person singular (she/he/it) is wrong. Always use "doesn\'t". In Portuguese the verb form is the same — that\'s why this mistake happens.',
+    nativeVersion:'She doesn\'t know the answer to the question.',
+    idiom:null,
+    patternWarning:'Third person singular: always use doesn\'t / hasn\'t / isn\'t'
+  };
+  return {
+    type:'logical', qtype:'WHAT WOULD A NATIVE SAY?',
+    question:`Your colleague asks for your opinion on a campaign idea. You think it's good but needs work. What do you say?`,
+    context:'Professional feedback situation in a marketing meeting.',
+    options:['That\'s a solid start — I think we can push it further.','I think it is good but it has some things to improve.','It is a good idea yes.','The idea has potential for improvement.'],
+    correct:0,
+    explanation:'"Solid start" is natural native encouragement. "Push it further" is how professionals suggest improvement without being negative. The other options sound translated or overly formal.',
+    nativeVersion:'That\'s a solid start — let\'s push it further.',
+    idiom:'SOLID START: a natural way to give positive-but-constructive feedback',
+    patternWarning:'Avoid direct translation of positive feedback — it sounds flat in English'
+  };
+}
+
+function renderExercise(ex) {
+  document.getElementById('exQType').textContent = ex.qtype;
+  document.getElementById('exQText').textContent = ex.question;
+  document.getElementById('exQContext').textContent = ex.context || '';
+
+  // Pattern warning from past mistakes
+  if (state.mistakePatterns.length > 0 && ex.patternWarning) {
+    document.getElementById('patternAlertText').textContent = `Watch out: ${ex.patternWarning}`;
+    document.getElementById('patternAlert').classList.add('visible');
+  }
+
+  const wrap = document.getElementById('exOptionsWrap');
+  wrap.innerHTML = '';
+
+  ex.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'ex-opt';
+    btn.textContent = `${['A','B','C','D'][i]}. ${opt}`;
+    btn.onclick = () => selectAnswer(i, ex);
+    wrap.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx, ex) {
+  const opts = document.querySelectorAll('.ex-opt');
+  opts.forEach(o => o.disabled = true);
+
+  const isCorrect = idx === ex.correct;
+  opts[idx].classList.add(isCorrect ? 'correct' : 'wrong');
+  opts[ex.correct].classList.add('correct');
+
+  showFeedback(isCorrect, ex);
+}
+
+function submitTextAnswer() {
+  const text = document.getElementById('exTextarea').value.trim();
+  if (!text) return;
+  document.getElementById('exSubmitBtn').disabled = true;
+  showFeedback(true, currentExercise, text);
+}
+
+function showFeedback(isCorrect, ex, userText) {
+  const xpGain = isCorrect ? 30 : 10;
+  if (isCorrect) sessionCorrect++;
+
+  // Track mistakes
+  if (!isCorrect && ex.patternWarning) {
+    state.mistakePatterns.push(ex.patternWarning);
+    if (state.mistakePatterns.length > 20) state.mistakePatterns.shift();
+  }
+
+  // Track session
+  sessionResults.push({
+    type: ex.type,
+    correct: isCorrect,
+    question: ex.question,
+    native: ex.nativeVersion,
+    idiom: ex.idiom
+  });
+
+  // Update villain HP
+  if (isCorrect) {
+    state.villainHP = Math.max(0, state.villainHP - 8);
+  } else {
+    state.playerHP = Math.max(10, state.playerHP - 10);
+  }
+
+  const fb = document.getElementById('exFeedback');
+  const verdict = document.getElementById('fbVerdict');
+  verdict.textContent = isCorrect ? '✓ CORRECT!' : '✗ WRONG!';
+  verdict.className = 'fb-verdict ' + (isCorrect ? 'correct' : 'wrong');
+
+  document.getElementById('fbExplanation').textContent = ex.explanation;
+
+  const native = document.getElementById('fbNative');
+  if (ex.nativeVersion) {
+    native.textContent = '✓ ' + ex.nativeVersion;
+    native.style.display = 'block';
+  } else {
+    native.style.display = 'none';
+  }
+
+  const idiomBox = document.getElementById('fbIdiomBox');
+  if (ex.idiom) {
+    document.getElementById('fbIdiomText').textContent = ex.idiom;
+    idiomBox.style.display = 'block';
+    if (isCorrect) {
+      state.idiomsLearned++;
+      state.idiomsBank.push({ idiom: ex.idiom, learned: new Date().toISOString(), nextReview: getNextReview(1) });
+    }
+  } else {
+    idiomBox.style.display = 'none';
+  }
+
+  document.getElementById('fbXP').textContent = `+${xpGain} XP`;
+  addXP(xpGain);
+
+  fb.classList.add('visible');
+  fb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  if (isCorrect) state.totalCorrect++;
+  saveState();
+}
+
+function getNextReview(interval) {
+  const d = new Date();
+  d.setDate(d.getDate() + interval);
+  return d.toISOString();
+}
+
+function nextRound() {
+  roundIndex++;
+  if (roundIndex >= 3) {
+    finishChallenge();
+  } else {
+    loadExercise();
+    window.scrollTo(0, 0);
+  }
+}
+
+function finishChallenge() {
+  state.challengeDone = true;
+  state.streak++;
+  state.daysPlayed++;
+  state.villainHP = Math.max(0, state.villainHP - (sessionCorrect * 5));
+
+  // Mirror moment — build from worst mistake
+  const wrongOnes = sessionResults.filter(r => !r.correct);
+  const mirrorSrc = wrongOnes.length > 0 ? wrongOnes[0] : sessionResults[0];
+
+  if (mirrorSrc) {
+    document.getElementById('mirrorBefore').textContent = '✗ "' + mirrorSrc.question.split('?')[0].substring(0, 80) + '..."';
+    document.getElementById('mirrorAfter').textContent = '✓ ' + (mirrorSrc.native || 'A native would express this more naturally.');
+  }
+
+  // Results breakdown
+  const bd = document.getElementById('resultsBreakdown');
+  bd.innerHTML = `<div class="rb-title">SESSION BREAKDOWN</div>` +
+    sessionResults.map((r,i) => `
+      <div class="rb-item">
+        <span>${EXERCISE_TYPES[i].toUpperCase()}</span>
+        <span class="${r.correct ? 'rb-correct' : 'rb-wrong'}">${r.correct ? '✓ +30 XP' : '✗ +10 XP'}</span>
+      </div>
+    `).join('') +
+    `<div class="rb-item"><span>ARCADE BONUS</span><span class="rb-correct">+${state.arcadeXP} XP</span></div>`;
+
+  const totalXP = sessionCorrect * 30 + (3 - sessionCorrect) * 10 + state.arcadeXP;
+  document.getElementById('resultsScore').textContent = `${sessionCorrect}/3`;
+  document.getElementById('resultsXP').textContent = `+${totalXP} XP EARNED`;
+
+  saveState();
+  showScreen('resultsScreen');
+}
+
+function addXP(amount) {
+  state.xp += amount;
+  if (state.xp >= state.xpToNext) {
+    state.xp -= state.xpToNext;
+    state.level++;
+    state.xpToNext = Math.floor(state.xpToNext * 1.3);
+    showToast(`⚡ LEVEL UP! YOU ARE NOW LEVEL ${state.level}!`);
+    drawAvatar(document.getElementById('avatarCanvas'));
+
+    // Unlock worlds
+    if (state.level >= 5) unlockWorld('feed');
+    if (state.level >= 10) unlockWorld('boss');
+  }
+}
+
+function unlockWorld(world) {
+  const card = document.querySelector(`[data-world="${world}"]`);
+  if (card && card.classList.contains('locked')) {
+    card.classList.remove('locked');
+    card.querySelector('.world-lock')?.remove();
+    showToast(`🔓 WORLD UNLOCKED: ${WORLDS[world]?.label}!`);
+  }
+}
+
+// ============================================================
+// ARCADE GAMES
+// ============================================================
+const GAMES = [
+  'SNAKE','PONG','BREAKOUT','FLAPPY BIRD','DODGE',
+  'MEMORY MATCH','COLOUR RUSH','WHACK-A-MOLE','2048 LITE','GRAVITY FLIP',
+  'SURF RUN','PIXEL RACER','LAVA RISE','SIMON SAYS','BOUNCER'
+];
+
+let arcadeGame = null;
+let arcadeAnimFrame = null;
+let arcadeRunning = false;
+let arcadeScoreVal = 0;
+
+function playArcade() {
+  state.arcadeXP = 0;
+  arcadeScoreVal = 0;
+  const gameIdx = Math.floor(Math.random() * GAMES.length);
+  const gameName = GAMES[gameIdx];
+  document.getElementById('arcadeGameName').textContent = gameName;
+  document.getElementById('arcadeScore').textContent = '0';
+  showScreen('arcadeScreen');
+  initArcadeGame(gameName);
+}
+
+function skipArcade() {
+  stopArcade();
+  showScreen('resultsScreen');
+}
+
+function stopArcade() {
+  arcadeRunning = false;
+  if (arcadeAnimFrame) cancelAnimationFrame(arcadeAnimFrame);
+  arcadeAnimFrame = null;
+}
+
+function arcadeInput(dir) {
+  if (arcadeGame && arcadeGame.input) arcadeGame.input(dir);
+}
+
+document.addEventListener('keydown', e => {
+  const map = { ArrowUp:'UP', ArrowDown:'DOWN', ArrowLeft:'LEFT', ArrowRight:'RIGHT', ' ':'SPACE' };
+  if (map[e.key] && arcadeRunning) {
+    e.preventDefault();
+    arcadeInput(map[e.key]);
+  }
+});
+
+function updateArcadeScore(score) {
+  arcadeScoreVal = score;
+  document.getElementById('arcadeScore').textContent = score;
+  state.arcadeXP = Math.min(50, Math.floor(score / 2));
+}
+
+function arcadeGameOver(score) {
+  arcadeRunning = false;
+  if (arcadeAnimFrame) cancelAnimationFrame(arcadeAnimFrame);
+  const canvas = document.getElementById('arcadeCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = 'rgba(0,0,0,0.7)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#00ffcc';
+  ctx.font = '14px "Press Start 2P"';
+  ctx.textAlign = 'center';
+  ctx.fillText('GAME OVER', canvas.width/2, canvas.height/2 - 20);
+  ctx.fillStyle = '#ffcc00';
+  ctx.font = '10px "Press Start 2P"';
+  ctx.fillText('SCORE: ' + score, canvas.width/2, canvas.height/2 + 10);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '8px "Press Start 2P"';
+  ctx.fillText('+' + Math.min(50,Math.floor(score/2)) + ' BONUS XP', canvas.width/2, canvas.height/2 + 35);
+  ctx.textAlign = 'left';
+  state.arcadeXP = Math.min(50, Math.floor(score/2));
+  addXP(state.arcadeXP);
+  saveState();
+}
+
+function initArcadeGame(name) {
+  stopArcade();
+  arcadeRunning = true;
+  const canvas = document.getElementById('arcadeCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 300;
+  canvas.height = 300;
+
+  // Show/hide direction buttons
+  const btns = document.getElementById('arcadeBtns');
+  btns.innerHTML = `
+    <button class="arcade-btn" onclick="arcadeInput('UP')">▲</button>
+    <button class="arcade-btn" onclick="arcadeInput('LEFT')">◄</button>
+    <button class="arcade-btn" onclick="arcadeInput('DOWN')">▼</button>
+    <button class="arcade-btn" onclick="arcadeInput('RIGHT')">►</button>
+  `;
+
+  if (name === 'SNAKE') initSnake(canvas, ctx);
+  else if (name === 'PONG') initPong(canvas, ctx);
+  else if (name === 'BREAKOUT') initBreakout(canvas, ctx);
+  else if (name === 'FLAPPY BIRD') initFlappy(canvas, ctx);
+  else if (name === 'DODGE') initDodge(canvas, ctx);
+  else if (name === 'MEMORY MATCH') initMemory(canvas, ctx);
+  else if (name === 'COLOUR RUSH') initColourRush(canvas, ctx);
+  else if (name === 'WHACK-A-MOLE') initWhack(canvas, ctx);
+  else if (name === '2048 LITE') init2048(canvas, ctx);
+  else if (name === 'GRAVITY FLIP') initGravity(canvas, ctx);
+  else if (name === 'SURF RUN') initSurf(canvas, ctx);
+  else if (name === 'PIXEL RACER') initRacer(canvas, ctx);
+  else if (name === 'LAVA RISE') initLava(canvas, ctx);
+  else if (name === 'SIMON SAYS') initSimon(canvas, ctx);
+  else if (name === 'BOUNCER') initBouncer(canvas, ctx);
+  else initSnake(canvas, ctx); // fallback
+}
+
+// ── SNAKE ──
+function initSnake(canvas, ctx) {
+  const G = 15, COLS = Math.floor(canvas.width/G), ROWS = Math.floor(canvas.height/G);
+  let snake = [{x:10,y:10}], dir = {x:1,y:0}, nextDir = {x:1,y:0};
+  let food = {x:5,y:5}, score = 0, speed = 150, lastTime = 0;
+
+  arcadeGame = { input: d => {
+    if (d==='UP'&&dir.y===0) nextDir={x:0,y:-1};
+    if (d==='DOWN'&&dir.y===0) nextDir={x:0,y:1};
+    if (d==='LEFT'&&dir.x===0) nextDir={x:-1,y:0};
+    if (d==='RIGHT'&&dir.x===0) nextDir={x:1,y:0};
+  }};
+
+  function placeFood() {
+    food = {x:Math.floor(Math.random()*COLS), y:Math.floor(Math.random()*ROWS)};
+  }
+
+  function loop(ts) {
+    if (!arcadeRunning) return;
+    arcadeAnimFrame = requestAnimationFrame(loop);
+    if (ts - lastTime < speed) return;
+    lastTime = ts;
+    dir = {...nextDir};
+    const head = {x:(snake[0].x+dir.x+COLS)%COLS, y:(snake[0].y+dir.y+ROWS)%ROWS};
+    if (snake.some(s=>s.x===head.x&&s.y===head.y)) { arcadeGameOver(score); return; }
+    snake.unshift(head);
+    if (head.x===food.x&&head.y===food.y) { score+=10; speed=Math.max(80,speed-5); updateArcadeScore(score); placeFood(); }
+    else snake.pop();
+
+    ctx.fillStyle = '#080810'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#00ffcc';
+    snake.forEach((s,i) => { ctx.globalAlpha = i===0?1:0.8; ctx.fillRect(s.x*G+1,s.y*G+1,G-2,G-2); });
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ff3366'; ctx.fillRect(food.x*G+2,food.y*G+2,G-4,G-4);
+    ctx.fillStyle = '#00ffcc33';
+    ctx.strokeStyle = '#00ffcc11';
+    for(let i=0;i<COLS;i++) { ctx.beginPath(); ctx.moveTo(i*G,0); ctx.lineTo(i*G,canvas.height); ctx.stroke(); }
+  }
+  placeFood();
+  arcadeAnimFrame = requestAnimationFrame(loop);
+}
+
+// ── PONG ──
+function initPong(canvas, ctx) {
+  let ball={x:150,y:150,vx:3,vy:2}, paddle={y:130,h:50,w:8}, cpu={y:130,h:50,w:8}, score=0;
+  arcadeGame = { input: d => {
+    if(d==='UP') paddle.y=Math.max(0,paddle.y-20);
+    if(d==='DOWN') paddle.y=Math.min(canvas.height-paddle.h,paddle.y+20);
+  }};
+  function loop() {
+    if (!arcadeRunning) return;
+    arcadeAnimFrame = requestAnimationFrame(loop);
+    ball.x+=ball.vx; ball.y+=ball.vy;
+    if(ball.y<=0||ball.y>=canvas.height) ball.vy*=-1;
+    // Player paddle collision
+    if(ball.x<=20&&ball.y>=paddle.y&&ball.y<=paddle.y+paddle.h){ball.vx=Math.abs(ball.vx)+0.2;ball.vy+=(ball.y-(paddle.y+paddle.h/2))*0.1;score++;updateArcadeScore(score*5);}
+    // CPU
+    cpu.y+=(ball.y-cpu.y-cpu.h/2)*0.06;
+    cpu.y=Math.max(0,Math.min(canvas.height-cpu.h,cpu.y));
+    if(ball.x>=canvas.width-20&&ball.y>=cpu.y&&ball.y<=cpu.y+cpu.h){ball.vx=-Math.abs(ball.vx);}
+    if(ball.x<0){arcadeGameOver(score*5);return;}
+    if(ball.x>canvas.width){ball.x=150;ball.y=150;ball.vx=3;ball.vy=2;}
+
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.setLineDash([5,5]); ctx.strokeStyle='#222'; ctx.beginPath(); ctx.moveTo(canvas.width/2,0); ctx.lineTo(canvas.width/2,canvas.height); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#00ffcc'; ctx.fillRect(12,paddle.y,paddle.w,paddle.h);
+    ctx.fillStyle='#ff00aa'; ctx.fillRect(canvas.width-20,cpu.y,cpu.w,cpu.h);
+    ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(ball.x,ball.y,6,0,Math.PI*2); ctx.fill();
+  }
+  arcadeAnimFrame = requestAnimationFrame(loop);
+}
+
+// ── BREAKOUT ──
+function initBreakout(canvas, ctx) {
+  const bW=40,bH=15,cols=6,rows=4;
+  let bricks=[],paddle={x:110,w:80,y:canvas.height-20,h:10},ball={x:150,y:200,vx:3,vy:-3},score=0;
+  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) bricks.push({x:c*(bW+4)+10,y:r*(bH+4)+30,alive:true,color:`hsl(${r*40+c*20},80%,55%)`});
+  arcadeGame={input:d=>{if(d==='LEFT')paddle.x=Math.max(0,paddle.x-20);if(d==='RIGHT')paddle.x=Math.min(canvas.width-paddle.w,paddle.x+20);}};
+  function loop(){
+    if(!arcadeRunning)return;
+    arcadeAnimFrame=requestAnimationFrame(loop);
+    ball.x+=ball.vx;ball.y+=ball.vy;
+    if(ball.x<=0||ball.x>=canvas.width)ball.vx*=-1;
+    if(ball.y<=0)ball.vy*=-1;
+    if(ball.y>=canvas.height){arcadeGameOver(score);return;}
+    if(ball.y>=paddle.y-6&&ball.x>=paddle.x&&ball.x<=paddle.x+paddle.w){ball.vy=-Math.abs(ball.vy);ball.vx+=(ball.x-(paddle.x+paddle.w/2))*0.05;}
+    bricks.forEach(b=>{if(!b.alive)return;if(ball.x>=b.x&&ball.x<=b.x+bW&&ball.y>=b.y&&ball.y<=b.y+bH){b.alive=false;ball.vy*=-1;score+=10;updateArcadeScore(score);}});
+    if(bricks.every(b=>!b.alive)){arcadeGameOver(score);return;}
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,canvas.width,canvas.height);
+    bricks.forEach(b=>{if(!b.alive)return;ctx.fillStyle=b.color;ctx.fillRect(b.x,b.y,bW,bH);});
+    ctx.fillStyle='#00ffcc';ctx.fillRect(paddle.x,paddle.y,paddle.w,paddle.h);
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(ball.x,ball.y,5,0,Math.PI*2);ctx.fill();
+  }
+  arcadeAnimFrame=requestAnimationFrame(loop);
+}
+
+// ── FLAPPY BIRD ──
+function initFlappy(canvas, ctx) {
+  let bird={y:150,vy:0},pipes=[],score=0,frame=0,started=false;
+  arcadeGame={input:d=>{if(d==='UP'||d==='SPACE'){bird.vy=-7;started=true;}}};
+  btns.innerHTML=`<button class="arcade-btn" style="min-width:120px" onclick="arcadeInput('UP')">▲ FLAP</button>`;
+  document.getElementById('arcadeCtrlLabel').textContent='TAP FLAP OR PRESS SPACE';
+  function addPipe(){const gap=90,top=30+Math.random()*(canvas.height-gap-60);pipes.push({x:canvas.width,top,gap});}
+  function loop(){
+    if(!arcadeRunning)return;
+    arcadeAnimFrame=requestAnimationFrame(loop);
+    frame++;
+    if(started){bird.vy+=0.4;bird.y+=bird.vy;}
+    if(frame%90===0)addPipe();
+    pipes.forEach(p=>{p.x-=2.5;});
+    pipes=pipes.filter(p=>p.x>-60);
+    pipes.forEach(p=>{
+      if(bird.y<p.top||bird.y>p.top+p.gap){if(70>p.x&&70<p.x+30){arcadeGameOver(score);return;}}
+      if(p.x===68)score++;
+    });
+    if(bird.y>canvas.height||bird.y<0){arcadeGameOver(score);return;}
+    updateArcadeScore(score);
+    ctx.fillStyle='#080018';ctx.fillRect(0,0,canvas.width,canvas.height);
+    pipes.forEach(p=>{ctx.fillStyle='#228844';ctx.fillRect(p.x,0,30,p.top);ctx.fillRect(p.x,p.top+p.gap,30,canvas.height-p.top-p.gap);});
+    ctx.fillStyle='#ffcc00';ctx.beginPath();ctx.arc(70,bird.y,10,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ff8800';ctx.beginPath();ctx.moveTo(80,bird.y-3);ctx.lineTo(90,bird.y);ctx.lineTo(80,bird.y+3);ctx.fill();
+  }
+  arcadeAnimFrame=requestAnimationFrame(loop);
+}
+
+// ── DODGE ──
+function initDodge(canvas, ctx) {
+  let player={x:150,y:250},bullets=[],score=0,frame=0;
+  arcadeGame={input:d=>{if(d==='LEFT')player.x=Math.max(10,player.x-20);if(d==='RIGHT')player.x=Math.min(canvas.width-10,player.x+20);}};
+  function loop(){
+    if(!arcadeRunning)return;
+    arcadeAnimFrame=requestAnimationFrame(loop);
+    frame++;score++;if(frame%30===0)updateArcadeScore(Math.floor(score/10));
+    if(frame%20===0)bullets.push({x:Math.random()*canvas.width,y:0,speed:2+Math.random()*3});
+    bullets.forEach(b=>b.y+=b.speed);
+    bullets=bullets.filter(b=>b.y<canvas.height);
+    if(bullets.some(b=>Math.abs(b.x-player.x)<12&&Math.abs(b.y-player.y)<12)){arcadeGameOver(Math.floor(score/10));return;}
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#ff3366';bullets.forEach(b=>{ctx.fillRect(b.x-4,b.y-4,8,8);});
+    ctx.fillStyle='#00ffcc';ctx.fillRect(player.x-10,player.y-10,20,20);
+  }
+  arcadeAnimFrame=requestAnimationFrame(loop);
+}
+
+// ── MEMORY MATCH ──
+function initMemory(canvas, ctx) {
+  const emojis=['🌊','🎾','🏄','💼','🌟','🎮','🔥','💡'];
+  let cards=[...emojis,...emojis].sort(()=>Math.random()-0.5).map((e,i)=>({e,i,flipped:false,matched:false}));
+  let flipped=[],score=0,locked=false;
+  btns.innerHTML='';
+  document.getElementById('arcadeCtrlLabel').textContent='CLICK CARDS TO FLIP';
+  function draw(){
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,canvas.width,canvas.height);
+    cards.forEach((c,i)=>{
+      const col=i%4,row=Math.floor(i/4);
+      const x=col*70+10,y=row*70+10,w=60,h=60;
+      if(c.matched){ctx.fillStyle='#003322';}
+      else if(c.flipped){ctx.fillStyle='#162244';}
+      else{ctx.fillStyle='#1a1a3a';}
+      ctx.fillRect(x,y,w,h);
+      ctx.strokeStyle=c.matched?'#00ff88':c.flipped?'#00aaff':'#2a2a4a';
+      ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);
+      if(c.flipped||c.matched){ctx.font='28px serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.e,x+w/2,y+h/2);}
+      else{ctx.fillStyle='#2a2a6a';ctx.fillRect(x+10,y+10,w-20,h-20);}
+    });
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  }
+  canvas.onclick=e=>{
+    if(locked)return;
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const my=(e.clientY-rect.top)*(canvas.height/rect.height);
+    cards.forEach((c,i)=>{
+      if(c.matched||c.flipped)return;
+      const col=i%4,row=Math.floor(i/4),x=col*70+10,y=row*70+10;
+      if(mx>=x&&mx<=x+60&&my>=y&&my<=y+60){
+        c.flipped=true;flipped.push(i);
+        if(flipped.length===2){
+          locked=true;
+          setTimeout(()=>{
+            if(cards[flipped[0]].e===cards[flipped[1]].e){cards[flipped[0]].matched=cards[flipped[1]].matched=true;score+=20;updateArcadeScore(score);}
+            else{cards[flipped[0]].flipped=cards[flipped[1]].flipped=false;}
+            flipped=[];locked=false;
+            if(cards.every(c=>c.matched))arcadeGameOver(score);
+            draw();
+          },700);
+        }
+        draw();
+      }
+    });
+  };
+  draw();
+  arcadeAnimFrame=requestAnimationFrame(()=>{});
+}
+
+// ── COLOUR RUSH ──
+function initColourRush(canvas, ctx) {
+  const colors=[{name:'RED',hex:'#ff3366'},{name:'CYAN',hex:'#00ffcc'},{name:'YELLOW',hex:'#ffcc00'},{name:'PINK',hex:'#ff00aa'}];
+  let score=0,timeLeft=30,target='',current=0;
+  btns.innerHTML='';
+  document.getElementById('arcadeCtrlLabel').textContent='TAP THE MATCHING COLOUR';
+  function newRound(){target=colors[Math.floor(Math.random()*colors.length)].name;}
+  function draw(){
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#ffffff';ctx.font='12px "Press Start 2P"';ctx.textAlign='center';
+    ctx.fillText('TAP THE: '+target,canvas.width/2,50);
+    ctx.fillStyle=timeLeft<10?'#ff3366':'#00ffcc';
+    ctx.font='10px "Press Start 2P"';
+    ctx.fillText('TIME: '+timeLeft,canvas.width/2,80);
+    colors.forEach((c,i)=>{
+      const col=i%2,row=Math.floor(i/2),x=col*140+20,y=row*100+120;
+      ctx.fillStyle=c.hex;ctx.fillRect(x,y,120,70);
+      ctx.fillStyle='#000';ctx.font='9px "Press Start 2P"';ctx.fillText(c.name,x+60,y+40);
+    });
+    ctx.textAlign='left';
+  }
+  canvas.onclick=e=>{
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const my=(e.clientY-rect.top)*(canvas.height/rect.height);
+    colors.forEach((c,i)=>{
+      const col=i%2,row=Math.floor(i/2),x=col*140+20,y=row*100+120;
+      if(mx>=x&&mx<=x+120&&my>=y&&my<=y+70){
+        if(c.name===target){score+=10;updateArcadeScore(score);newRound();}
+        else{score=Math.max(0,score-5);}
+        draw();
+      }
+    });
+  };
+  newRound();draw();
+  const timer=setInterval(()=>{
+    if(!arcadeRunning){clearInterval(timer);return;}
+    timeLeft--;draw();
+    if(timeLeft<=0){clearInterval(timer);arcadeGameOver(score);}
+  },1000);
+}
+
+// ── WHACK-A-MOLE ──
+function initWhack(canvas, ctx) {
+  let score=0,holes=Array(9).fill(false),timeLeft=30;
+  btns.innerHTML='';
+  document.getElementById('arcadeCtrlLabel').textContent='TAP THE MOLES!';
+  function showMole(){const i=Math.floor(Math.random()*9);holes[i]=true;setTimeout(()=>{holes[i]=false;draw();},800);}
+  function draw(){
+    ctx.fillStyle='#1a0a00';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#ffcc00';ctx.font='10px "Press Start 2P"';ctx.textAlign='center';
+    ctx.fillText('SCORE: '+score,canvas.width/2,25);
+    ctx.fillStyle=timeLeft<10?'#ff3366':'#00ffcc';
+    ctx.fillText('TIME: '+timeLeft,canvas.width/2,45);
+    holes.forEach((h,i)=>{
+      const col=i%3,row=Math.floor(i/3),x=col*90+25,y=row*80+70;
+      ctx.fillStyle='#3a1a00';ctx.beginPath();ctx.ellipse(x+30,y+20,30,15,0,0,Math.PI*2);ctx.fill();
+      if(h){ctx.fillStyle='#8B4513';ctx.fillRect(x+10,y-20,40,40);ctx.fillStyle='#000';ctx.fillRect(x+18,y-12,8,8);ctx.fillRect(x+34,y-12,8,8);ctx.fillStyle='#ff6688';ctx.fillRect(x+22,y-2,16,6);}
+    });
+    ctx.textAlign='left';
+  }
+  canvas.onclick=e=>{
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const my=(e.clientY-rect.top)*(canvas.height/rect.height);
+    holes.forEach((h,i)=>{
+      if(!h)return;
+      const col=i%3,row=Math.floor(i/3),x=col*90+25,y=row*80+70;
+      if(mx>=x&&mx<=x+60&&my>=y-20&&my<=y+30){holes[i]=false;score+=10;updateArcadeScore(score);draw();}
+    });
+  };
+  draw();
+  const moleInt=setInterval(()=>{if(!arcadeRunning){clearInterval(moleInt);return;}showMole();draw();},700);
+  const timerInt=setInterval(()=>{if(!arcadeRunning){clearInterval(timerInt);return;}timeLeft--;draw();if(timeLeft<=0){clearInterval(timerInt);clearInterval(moleInt);arcadeGameOver(score);}},1000);
+}
+
+// ── 2048 LITE (3x3) ──
+function init2048(canvas, ctx) {
+  let grid=Array(9).fill(0),score=0;
+  grid[0]=2;grid[4]=2;
+  btns.innerHTML=`<button class="arcade-btn" onclick="arcadeInput('UP')">▲</button><button class="arcade-btn" onclick="arcadeInput('LEFT')">◄</button><button class="arcade-btn" onclick="arcadeInput('DOWN')">▼</button><button class="arcade-btn" onclick="arcadeInput('RIGHT')">►</button>`;
+  function addTile(){const empty=grid.map((v,i)=>v===0?i:-1).filter(i=>i>=0);if(empty.length)grid[empty[Math.floor(Math.random()*empty.length)]]=Math.random()<0.9?2:4;}
+  function slide(arr){let r=arr.filter(v=>v);for(let i=0;i<r.length-1;i++)if(r[i]===r[i+1]){r[i]*=2;score+=r[i];r.splice(i+1,1);}while(r.length<3)r.push(0);return r;}
+  function move(d){
+    let changed=false,old=[...grid];
+    if(d==='LEFT'){for(let r=0;r<3;r++){const row=grid.slice(r*3,r*3+3);const n=slide(row);for(let c=0;c<3;c++)grid[r*3+c]=n[c];}}
+    if(d==='RIGHT'){for(let r=0;r<3;r++){const row=grid.slice(r*3,r*3+3).reverse();const n=slide(row).reverse();for(let c=0;c<3;c++)grid[r*3+c]=n[c];}}
+    if(d==='UP'){for(let c=0;c<3;c++){const col=[grid[c],grid[c+3],grid[c+6]];const n=slide(col);grid[c]=n[0];grid[c+3]=n[1];grid[c+6]=n[2];}}
+    if(d==='DOWN'){for(let c=0;c<3;c++){const col=[grid[c+6],grid[c+3],grid[c]];const n=slide(col);grid[c+6]=n[0];grid[c+3]=n[1];grid[c]=n[2];}}
+    changed=old.some((v,i)=>v!==grid[i]);
+    if(changed)addTile();
+    updateArcadeScore(score);
+    draw();
+    if(grid.some(v=>v>=256))arcadeGameOver(score);
+  }
+  const colors={0:'#1a1a3a',2:'#003344',4:'#004466',8:'#226699',16:'#3388bb',32:'#44aadd',64:'#00ccff',128:'#00ffcc',256:'#ffcc00'};
+  function draw(){
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,canvas.width,canvas.height);
+    grid.forEach((v,i)=>{
+      const col=i%3,row=Math.floor(i/3),x=col*96+6,y=row*96+6;
+      ctx.fillStyle=colors[v]||'#ffcc00';ctx.fillRect(x,y,88,88);
+      if(v){ctx.fillStyle='#fff';ctx.font=v>=100?'16px "Press Start 2P"':'20px "Press Start 2P"';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(v,x+44,y+44);}
+    });
+    ctx.textAlign='left';ctx.textBaseline='alphabetic';
+    ctx.fillStyle='#ffcc00';ctx.font='8px "Press Start 2P"';ctx.fillText('SCORE: '+score,10,295);
+  }
+  arcadeGame={input:d=>move(d)};
+  draw();
+}
+
+// ── GRAVITY FLIP ──
+function initGravity(canvas, ctx) {
+  let player={y:150,vy:0},gravity=0.4,flipped=false,obstacles=[],score=0,frame=0;
+  btns.innerHTML=`<button class="arcade-btn" style="min-width:140px" onclick="arcadeInput('SPACE')">⚡ FLIP GRAVITY</button>`;
+  document.getElementById('arcadeCtrlLabel').textContent='TAP TO FLIP GRAVITY';
+  arcadeGame={input:()=>{gravity*=-1;flipped=!flipped;}};
+  function loop(){
+    if(!arcadeRunning)return;
+    arcadeAnimFrame=requestAnimationFrame(loop);
+    frame++;score++;if(frame%45===0)updateArcadeScore(Math.floor(score/10));
+    player.vy+=gravity;player.y+=player.vy;
+    if(player.y<0||player.y>canvas.height){arcadeGameOver(Math.floor(score/10));return;}
+    if(frame%80===0){const gap=80,top=20+Math.random()*(canvas.height-gap-40);obstacles.push({x:canvas.width,top,gap});}
+    obstacles.forEach(o=>o.x-=3);
+    obstacles=obstacles.filter(o=>o.x>-30);
+    if(obstacles.some(o=>{return o.x<30&&o.x>-10&&(player.y<o.top||player.y>o.top+o.gap);})){arcadeGameOver(Math.floor(score/10));return;}
+    ctx.fillStyle='#080018';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#ff00aa';
+    obstacles.forEach(o=>{ctx.fillRect(o.x,0,20,o.top);ctx.fillRect(o.x,o.top+o.gap,20,canvas.height-o.top-o.gap);});
+    ctx.fillStyle=flipped?'#ff00aa':'#00ffcc';
+    ctx.fillRect(30,player.y-10,20,20);
+    ctx.fillStyle=flipped?'#ff00aa44':'#00ffcc44';
+    ctx.fillRect(0,flipped?0:canvas.height-5,canvas.width,5);
+  }
+  arcadeAnimFrame=requestAnimationFrame(loop);
+}
+
+// ── SURF RUN ──
+function initSurf(canvas, ctx) {
+  let surfer={y:200,vy:0},rocks=[],score=0,frame=0,waveOff=0;
+  btns.innerHTML=`<button class="arcade-btn" onclick="arcadeInput('UP')">▲ UP</button><button class="arcade-btn" onclick="arcadeInput('DOWN')">▼ DOWN</button>`;
+  arcadeGame={input:d=>{if(d==='UP')surfer.vy=-5;if(d==='DOWN')surfer.vy=5;}};
+  function loop(){
+    if(!arcadeRunning)return;
+    arcadeAnimFrame=requestAnimationFrame(loop);
+    frame++;score++;waveOff+=0.05;
+    if(frame%60===0)updateArcadeScore(Math.floor(score/10));
+    surfer.vy*=0.85;surfer.y+=surfer.vy;
+    surfer.y=Math.max(60,Math.min(canvas.height-40,surfer.y));
+    if(frame%70===0)rocks.push({x:canvas.width,y:60+Math.random()*(canvas.height-120),r:12+Math.random()*10});
+    rocks.forEach(r=>r.x-=4);rocks=rocks.filter(r=>r.x>-20);
+    if(rocks.some(r=>Math.hypot(r.x-60,r.y-surfer.y)<r.r+10)){arcadeGameOver(Math.floor(score/10));return;}
+
+    ctx.fillStyle='#001133';ctx.fillRect(0,0,canvas.width,canvas.height);
+    // Waves
+    for(let w=0;w<5;w++){
+      ctx.strokeStyle=`rgba(0,170,255,${0.1+w*0.04})`;ctx.lineWidth=1+w;
+      ctx.beginPath();
+      for(let x=0;x<canvas.width;x+=3){ctx.lineTo(x,100+w*30+Math.sin(x*0.03+waveOff+w)*15);}
+      ctx.stroke();
+    }
+    // Rocks
+    rocks.forEach(r=>{ctx.fillStyle='#554433';ctx.beginPath();ctx.arc(r.x,r.y,r.r,0,Math.PI*2);ctx.fill();});
+    // Surfer
+    ctx.fillStyle='#ffcc00';ctx.fillRect(50,surfer.y-8,24,12);
+    ctx.fillStyle='#00ffcc';ctx.fillRect(44,surfer.y+4,36,5);
+    // Sun
+    ctx.fillStyle='rgba(255,200,0,0.3)';ctx.beginPath();ctx.arc(canvas.width-40,40,25,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,200,0,0.8)';ctx.beginPath();ctx.arc(canvas.width-40,40,15,0,Math.PI*2);ctx.fill();
+  }
+  arcadeAnimFrame=requestAnimationFrame(loop);
+}
+
+// ── PIXEL RACER ──
+function initRacer(canvas, ctx) {
+  let player={x:130,lane:1},cars=[],score=0,frame=0,speed=3;
+  const lanes=[80,150,220];
+  btns.innerHTML=`<button class="arcade-btn" onclick="arcadeInput('LEFT')">◄</button><button class="arcade-btn" onclick="arcadeInput('RIGHT')">►</button>`;
+  arcadeGame={input:d=>{if(d==='LEFT')player.lane=Math.max(0,player.lane-1);if(d==='RIGHT')player.lane=Math.min(2,player.lane+1);player.x=lanes[player.lane];}};
+  function loop(){
+    if(!arcadeRunning)return;
+    arcadeAnimFrame=requestAnimationFrame(loop);
+    frame++;score++;speed+=0.001;
+    if(frame%60===0)updateArcadeScore(Math.floor(score/10));
+    if(frame%50===0){const lane=Math.floor(Math.random()*3);cars.push({x:lanes[lane],y:-40,lane});}
+    cars.forEach(c=>c.y+=speed);cars=cars.filter(c=>c.y<canvas.height+40);
+    if(cars.some(c=>Math.abs(c.x-player.x)<20&&Math.abs(c.y-240)<30)){arcadeGameOver(Math.floor(score/10));return;}
+    ctx.fillStyle='#111';ctx.fillRect(0,0,canvas.width,canvas.height);
+    // Road
+    ctx.fillStyle='#222';ctx.fillRect(50,0,200,canvas.height);
+    ctx.setLineDash([20,20]);ctx.strokeStyle='#444';ctx.lineWidth=2;
+    [110,185].forEach(x=>{ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,canvas.height);ctx.stroke();});
+    ctx.setLineDash([]);
+    // Cars
+    cars.forEach(c=>{ctx.fillStyle='#ff3366';ctx.fillRect(c.x-14,c.y-20,28,40);});
+    // Player
+    ctx.fillStyle='#00ffcc';ctx.fillRect(player.x-14,220,28,40);
+    ctx.fillStyle='#002222';ctx.fillRect(player.x-10,225,20,12);ctx.fillRect(player.x-10,242,20,12);
+  }
+  arcadeAnimFrame=requestAnimationFrame(loop);
+}
+
+// ── LAVA RISE ──
+function initLava(canvas, ctx) {
+  let player={x:150,y:250},platforms=[{x:100,y:270,w:100}],lava=canvas.height,score=0,frame=0;
+  btns.innerHTML=`<button class="arcade-btn" onclick="arcadeInput('LEFT')">◄</button><button class="arcade-btn" onclick="arcadeInput('UP')">▲ JUMP</button><button class="arcade-btn" onclick="arcadeInput('RIGHT')">►</button>`;
+  let vy=0,onGround=false;
+  arcadeGame={input:d=>{if(d==='LEFT')player.x-=20;if(d==='RIGHT')player.x+=20;if(d==='UP'&&onGround)vy=-12;}};
+  for(let i=0;i<8;i++)platforms.push({x:Math.random()*200+20,y:270-i*50,w:60+Math.random()*60});
+  function loop(){
+    if(!arcadeRunning)return;
+    arcadeAnimFrame=requestAnimationFrame(loop);
+    frame++;lava-=0.3;score++;
+    if(frame%60===0)updateArcadeScore(Math.floor(score/10));
+    vy+=0.5;player.y+=vy;onGround=false;
+    platforms.forEach(p=>{if(player.y>=p.y-5&&player.y<=p.y+5&&player.x>=p.x&&player.x<=p.x+p.w&&vy>0){player.y=p.y;vy=0;onGround=true;}});
+    player.x=Math.max(0,Math.min(canvas.width,player.x));
+    if(player.y>lava||player.y>canvas.height){arcadeGameOver(Math.floor(score/10));return;}
+    // Scroll
+    if(player.y<100){const dy=100-player.y;player.y+=dy;platforms.forEach(p=>p.y+=dy);lava+=dy;}
+    ctx.fillStyle='#080008';ctx.fillRect(0,0,canvas.width,canvas.height);
+    platforms.forEach(p=>{ctx.fillStyle='#446633';ctx.fillRect(p.x,p.y,p.w,10);});
+    // Lava
+    const lg=ctx.createLinearGradient(0,lava,0,canvas.height);
+    lg.addColorStop(0,'#ff6600');lg.addColorStop(1,'#ff0000');
+    ctx.fillStyle=lg;ctx.fillRect(0,lava,canvas.width,canvas.height-lava);
+    // Player
+    ctx.fillStyle='#00ffcc';ctx.fillRect(player.x-8,player.y-20,16,20);
+  }
+  arcadeAnimFrame=requestAnimationFrame(loop);
+}
+
+// ── SIMON SAYS ──
+function initSimon(canvas, ctx) {
+  const cols=['#ff3366','#00ffcc','#ffcc00','#ff00aa'];
+  const names=['RED','CYAN','YELLOW','PINK'];
+  let sequence=[],playerSeq=[],level=0,score=0,playing=false,showing=false;
+  btns.innerHTML='';
+  document.getElementById('arcadeCtrlLabel').textContent='REPEAT THE SEQUENCE';
+  function draw(active=-1){
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,canvas.width,canvas.height);
+    [[0,0],[1,0],[0,1],[1,1]].forEach(([col,row],i)=>{
+      const x=col*140+20,y=row*140+60;
+      ctx.fillStyle=i===active?cols[i]:cols[i]+'44';
+      ctx.fillRect(x,y,120,110);
+      ctx.fillStyle=i===active?'#000':'#888';
+      ctx.font='8px "Press Start 2P"';ctx.textAlign='center';ctx.fillText(names[i],x+60,y+60);
+    });
+    ctx.fillStyle='#fff';ctx.font='8px "Press Start 2P"';ctx.textAlign='center';
+    ctx.fillText('LEVEL '+level,canvas.width/2,40);
+    ctx.textAlign='left';
+  }
+  async function showSequence(){
+    showing=true;playing=false;
+    for(const s of sequence){
+      draw(s);await delay(500);draw();await delay(200);
+    }
+    showing=false;playing=true;playerSeq=[];draw();
+  }
+  function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+  function nextLevel(){level++;score+=level*10;updateArcadeScore(score);sequence.push(Math.floor(Math.random()*4));showSequence();}
+  canvas.onclick=e=>{
+    if(!playing||showing)return;
+    const rect=canvas.getBoundingClientRect();
+    const mx=(e.clientX-rect.left)*(canvas.width/rect.width);
+    const my=(e.clientY-rect.top)*(canvas.height/rect.height);
+    [[0,0],[1,0],[0,1],[1,1]].forEach(([col,row],i)=>{
+      const x=col*140+20,y=row*140+60;
+      if(mx>=x&&mx<=x+120&&my>=y&&my<=y+110){
+        draw(i);setTimeout(()=>draw(),300);
+        playerSeq.push(i);
+        const idx=playerSeq.length-1;
+        if(playerSeq[idx]!==sequence[idx]){arcadeGameOver(score);return;}
+        if(playerSeq.length===sequence.length)setTimeout(nextLevel,500);
+      }
+    });
+  };
+  nextLevel();
+}
+
+// ── BOUNCER ──
+function initBouncer(canvas, ctx) {
+  let ball={x:150,y:150,vx:4,vy:3},paddle={x:100,w:80,y:canvas.height-25},bricks=[],score=0;
+  for(let r=0;r<3;r++)for(let c=0;c<5;c++)bricks.push({x:c*58+5,y:r*30+30,alive:true,hits:2-Math.floor(r/2)});
+  arcadeGame={input:d=>{if(d==='LEFT')paddle.x=Math.max(0,paddle.x-25);if(d==='RIGHT')paddle.x=Math.min(canvas.width-paddle.w,paddle.x+25);}};
+  function loop(){
+    if(!arcadeRunning)return;
+    arcadeAnimFrame=requestAnimationFrame(loop);
+    ball.x+=ball.vx;ball.y+=ball.vy;
+    if(ball.x<0||ball.x>canvas.width)ball.vx*=-1;
+    if(ball.y<0)ball.vy*=-1;
+    if(ball.y>canvas.height){arcadeGameOver(score);return;}
+    if(ball.y>=paddle.y-8&&ball.x>=paddle.x&&ball.x<=paddle.x+paddle.w){ball.vy=-Math.abs(ball.vy);ball.vx+=(ball.x-(paddle.x+paddle.w/2))*0.08;}
+    bricks.forEach(b=>{
+      if(!b.alive)return;
+      if(ball.x>=b.x&&ball.x<=b.x+52&&ball.y>=b.y&&ball.y<=b.y+22){
+        b.hits--;if(b.hits<=0){b.alive=false;score+=20;}
+        else score+=5;
+        ball.vy*=-1;updateArcadeScore(score);
+      }
+    });
+    if(bricks.every(b=>!b.alive)){arcadeGameOver(score);return;}
+    ctx.fillStyle='#080810';ctx.fillRect(0,0,canvas.width,canvas.height);
+    bricks.forEach(b=>{if(!b.alive)return;ctx.fillStyle=b.hits>1?'#ff00aa':'#ff6688';ctx.fillRect(b.x,b.y,52,22);ctx.strokeStyle='#080810';ctx.lineWidth=2;ctx.strokeRect(b.x,b.y,52,22);});
+    ctx.fillStyle='#00ffcc';ctx.fillRect(paddle.x,paddle.y,paddle.w,10);
+    ctx.fillStyle='#ffcc00';ctx.beginPath();ctx.arc(ball.x,ball.y,7,0,Math.PI*2);ctx.fill();
+  }
+  arcadeAnimFrame=requestAnimationFrame(loop);
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = () => {
+  drawVillain(document.getElementById('villainTitleCanvas'));
+
+  // Check if returning player
+  if (loadState()) {
+    // Check if new day
+    const today = new Date().toDateString();
+    if (state.lastPlayed !== today) {
+      state.lastPlayed = today;
+      state.challengeDone = false;
+      saveState();
+    }
+  }
+};
+
+
+// ═══════════════════════════════════════════════════
+// V2 PHASE SYSTEM — 6 phases with arcade breaks
+// ═══════════════════════════════════════════════════
+
+const PHASE_NAMES = ['Warm Up','World Story','Grammar Sprint','Idiom Deep Dive','Conversation Sim','Arcade Reward','Debrief'];
+const WORLD_DATA = {
+  briefing:{label:'🏢 THE BRIEFING ROOM',topics:['marketing','copywriting','client emails','strategy meetings','campaign briefs','product launches']},
+  lineup:{label:'🌊 THE LINEUP',topics:['surfing','outdoor','sport','weather','travel','adventure']},
+  court:{label:'🎾 THE COURT',topics:['social situations','friends','small talk','banter','dating','parties']},
+  pitch:{label:'💼 THE PITCH',topics:['negotiation','persuasion','sales','presenting ideas','leadership']},
+  feed:{label:'📱 THE FEED',topics:['internet slang','memes','pop culture','social media']},
+  boss:{label:'💀 BOSS DOOR',topics:['advanced idioms','complex grammar','native fluency']},
+};
+
+let phaseIndex = 0;
+let arcadeReturnToPhase = null;
+let sessionPhaseXP = 0;
+let phaseSessionResults = [];
+let activePhaseData = {};
+
+// World helper
+function getWorldTopic() {
+  const w = WORLD_DATA[state.currentWorld] || WORLD_DATA.briefing;
+  return w.topics[Math.floor(Math.random() * w.topics.length)];
+}
+function getWorldLabel() {
+  return (WORLD_DATA[state.currentWorld] || WORLD_DATA.briefing).label;
+}
+function profileContext() {
+  return `Portuguese native speaker, works in English 70% of the day, level: ${state.profile.level}, weakness: ${state.profile.weakness}, recent mistakes: ${state.mistakePatterns.slice(-3).join(', ') || 'none yet'}. World: ${getWorldLabel()}.`;
+}
+
+// Claude API helper
+async function askClaude(prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const d = await res.json();
+  return (d.content?.find(b => b.type === 'text')?.text || '').replace(/```json|```/g, '').trim();
+}
+
+// Update phase pips
+function updatePhasePips(active) {
+  for (let i = 0; i <= 6; i++) {
+    const p = document.getElementById('pip' + i);
+    if (!p) continue;
+    p.className = 'round-pip' + (i < active ? ' done' : i === active ? ' active' : '');
+  }
+}
+
+// Override startChallenge to use phase system
+const _origStartChallenge = typeof startChallenge !== 'undefined' ? startChallenge : null;
+function startChallenge() {
+  if (state.challengeDone) return;
+  phaseIndex = 0;
+  sessionPhaseXP = 0;
+  phaseSessionResults = [];
+  state.sessionXP = 0;
+  state.sessionCorrect = 0;
+  state.sessionTotal = 0;
+  state.sessionMirror = { before: '', after: '' };
+  launchPhase(0);
+}
+
+function launchPhase(idx) {
+  phaseIndex = idx;
+  updatePhasePips(idx);
+  if (idx === 0) launchWarmUp();
+  else if (idx === 1) launchWorldStory();
+  else if (idx === 2) launchGrammarSprint();
+  else if (idx === 3) launchIdiomDive();
+  else if (idx === 4) launchConvoSim();
+  else if (idx === 5) launchArcadeReward();
+  else launchDebrief();
+}
+
+function phaseComplete(phaseName, xp) {
+  addXP(xp);
+  sessionPhaseXP += xp;
+  const nextIdx = phaseIndex + 1;
+  const nextName = nextIdx < PHASE_NAMES.length ? PHASE_NAMES[nextIdx] : 'Debrief';
+
+  document.getElementById('brkPhaseDone').textContent = '✓ ' + phaseName.toUpperCase() + ' COMPLETE';
+  document.getElementById('brkXP').textContent = '+' + xp + ' XP';
+  document.getElementById('brkNextLabel').textContent = 'NEXT: ' + nextName.toUpperCase();
+  drawVillain(document.getElementById('breakVillainC'));
+  arcadeReturnToPhase = nextIdx;
+
+  showScreen('breakScreen');
+}
+
+function skipToNextPhase() {
+  launchPhase(arcadeReturnToPhase);
+}
+
+function goArcadeBreak() {
+  // Pick random arcade game and go to arcade screen
+  const GAMES_LIST = ['SNAKE','PONG','BREAKOUT','FLAPPY BIRD','DODGE','MEMORY MATCH','COLOUR RUSH','WHACK-A-MOLE','2048 LITE','GRAVITY FLIP','SURF RUN','PIXEL RACER','LAVA RISE','SIMON SAYS','BOUNCER'];
+  const gameName = GAMES_LIST[Math.floor(Math.random() * GAMES_LIST.length)];
+  document.getElementById('arcadeGameName').textContent = gameName;
+  document.getElementById('arcadeScore').textContent = '0';
+  showScreen('arcadeScreen');
+  initArcadeGame(gameName);
+  // Override arcade skip/done to return to phase
+  document.querySelector('.arcade-skip').onclick = () => {
+    stopArcade();
+    launchPhase(arcadeReturnToPhase);
+  };
+}
+
+// ─── PHASE 1: WARM UP ───────────────────────────────
+let wuQuestions = [], wuIndex = 0;
+
+async function launchWarmUp() {
+  showScreen('exerciseScreen');
+  document.getElementById('exTypeLabel').textContent = '🔥 PHASE 1 — WARM UP';
+  document.getElementById('exRoundLabel').textContent = 'Q 1/3';
+  document.getElementById('exWorldBadge').textContent = getWorldLabel();
+  document.getElementById('exFeedback').classList.remove('visible');
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exLoading').style.display = 'block';
+  document.getElementById('exQuestion').style.opacity = '0.3';
+
+  // Show last mistake as reminder
+  if (state.mistakePatterns.length > 0) {
+    document.getElementById('patternAlert').classList.add('visible');
+    document.getElementById('patternAlertText').textContent = '⚠ From last time: ' + state.mistakePatterns[state.mistakePatterns.length - 1];
+  }
+
+  const topic = getWorldTopic();
+  const prompt = `${profileContext()} Topic: ${topic}.
+Generate 3 warm-up multiple choice questions targeting this player's weakness. Real adult situations about ${topic}.
+Return ONLY JSON array: [{"qtype":"QUICK FIRE","question":"...","options":["A correct native phrasing","B PT translation mistake","C too formal","D another wrong"],"correct":0,"explanation":"...","native":"the correct sentence"}]
+No preamble. ONLY the JSON array.`;
+
+  try {
+    const raw = await askClaude(prompt);
+    wuQuestions = JSON.parse(raw);
+  } catch(e) {
+    wuQuestions = [
+      {qtype:'QUICK FIRE',question:"You need to reschedule a client call. What sounds most natural?",options:["Could we move our call to Thursday?","Is it possible to reschedule our call to Thursday?","I need to change our call to Thursday.","Can we do the call on another day?"],correct:0,explanation:'"Could we move" is the most natural professional phrasing — direct and polite.',native:"Could we move our call to Thursday?"},
+      {qtype:'QUICK FIRE',question:"A colleague did great work. What do you say?",options:["That's spot on.","That is very correct and good.","You have done a very good work.","I agree that it is good."],correct:0,explanation:'"Spot on" = exactly right. Natural praise. "You have done a very good work" is a PT translation — wrong.',native:"That's spot on."},
+      {qtype:'QUICK FIRE',question:"The project is delayed. You say:",options:["We're running behind schedule.","We are late with the project.","The project has delay.","We don't finish in time."],correct:0,explanation:'"Running behind schedule" is the natural idiom. "Has delay" = direct PT translation.',native:"We're running behind schedule."}
+    ];
+  }
+
+  wuIndex = 0;
+  document.getElementById('exLoading').style.display = 'none';
+  document.getElementById('exQuestion').style.opacity = '1';
+  renderWarmUpQ();
+}
+
+function renderWarmUpQ() {
+  const q = wuQuestions[wuIndex];
+  document.getElementById('exRoundLabel').textContent = 'Q ' + (wuIndex + 1) + '/3';
+  document.getElementById('exQType').textContent = q.qtype;
+  document.getElementById('exQText').textContent = q.question;
+  document.getElementById('exQContext').textContent = '';
+  document.getElementById('exFeedback').classList.remove('visible');
+
+  const wrap = document.getElementById('exOptionsWrap');
+  wrap.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'ex-opt';
+    b.textContent = ['A','B','C','D'][i] + '. ' + opt;
+    b.onclick = () => handleWarmUpAnswer(i, q);
+    wrap.appendChild(b);
+  });
+}
+
+function handleWarmUpAnswer(idx, q) {
+  const opts = document.querySelectorAll('.ex-opt');
+  opts.forEach(o => o.disabled = true);
+  const ok = idx === q.correct;
+  opts[idx].classList.add(ok ? 'correct' : 'wrong');
+  opts[q.correct].classList.add('correct');
+
+  if (ok) { state.sessionCorrect++; state.totalCorrect++; }
+  else if (q.explanation) { state.mistakePatterns.push(q.explanation.substring(0, 60)); state.sessionMirror = { before: q.question, after: q.native }; }
+  state.sessionTotal++;
+
+  document.getElementById('fbVerdict').textContent = ok ? '✓ CORRECT!' : '✗ WRONG!';
+  document.getElementById('fbVerdict').className = 'fb-verdict ' + (ok ? 'correct' : 'wrong');
+  document.getElementById('fbExplanation').textContent = q.explanation;
+  document.getElementById('fbNative').textContent = '✓ ' + q.native;
+  document.getElementById('fbNative').style.display = 'block';
+  document.getElementById('fbIdiomBox').style.display = 'none';
+  document.getElementById('fbXP').textContent = ok ? '+15 XP' : '+5 XP';
+  addXP(ok ? 15 : 5);
+  document.getElementById('exFeedback').classList.add('visible');
+  document.getElementById('exFeedback').querySelector('.next-btn').onclick = wuNextQ;
+  saveState();
+}
+
+function wuNextQ() {
+  wuIndex++;
+  if (wuIndex >= wuQuestions.length) {
+    phaseComplete('Warm Up', 30);
+    return;
+  }
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exFeedback').classList.remove('visible');
+  renderWarmUpQ();
+}
+
+// ─── PHASE 2: WORLD STORY ────────────────────────────
+let storyQuestions = [], storyIndex = 0, storyText = '';
+
+async function launchWorldStory() {
+  showScreen('exerciseScreen');
+  document.getElementById('exTypeLabel').textContent = '📖 PHASE 2 — WORLD STORY';
+  document.getElementById('exRoundLabel').textContent = 'Q 1/4';
+  document.getElementById('exWorldBadge').textContent = getWorldLabel();
+  document.getElementById('exFeedback').classList.remove('visible');
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exLoading').style.display = 'block';
+  document.getElementById('exQuestion').style.opacity = '0.3';
+  document.getElementById('patternAlert').classList.remove('visible');
+
+  const topic = getWorldTopic();
+  const date = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const prompt = `${profileContext()} Today: ${date}. Topic: ${topic}.
+Write a short engaging ADULT story (5-6 sentences) set in the world of ${topic}. Include 3 natural English idioms naturally woven in. Not infantile or basic.
+Then create 4 questions about the story (idiom meanings, comprehension, grammar).
+Return ONLY JSON: {"story":"...","questions":[{"qtype":"IDIOM QUESTION","question":"...","options":["A","B","C","D"],"correct":0,"explanation":"...","idiom":"idiom name: meaning or null"}]}
+ONLY the JSON.`;
+
+  try {
+    const raw = await askClaude(prompt);
+    const data = JSON.parse(raw);
+    storyText = data.story;
+    storyQuestions = data.questions;
+  } catch(e) {
+    storyText = 'The campaign was falling apart. Sarah knew she had to bite the bullet and tell the client the truth. She cut to the chase in the meeting — no fluff, no spin. The client actually appreciated her directness and they got back on track. Sometimes the best strategy is to just lay your cards on the table.';
+    storyQuestions = [
+      {qtype:'IDIOM QUESTION',question:'What does "bite the bullet" mean in this story?',options:['Do something difficult you've been avoiding','Eat something sharp','Shoot a weapon','Be very angry'],correct:0,explanation:'"Bite the bullet" means to do something difficult or painful that cannot be avoided.',idiom:'BITE THE BULLET: force yourself through something hard'},
+      {qtype:'IDIOM QUESTION',question:'What does "cut to the chase" mean?',options:['Get directly to the important point','Run fast','Chase someone','Start from the beginning'],correct:0,explanation:'"Cut to the chase" = skip the filler and get to the main point. From film editing.',idiom:'CUT TO THE CHASE: skip the fluff, get to the point'},
+      {qtype:'IDIOM QUESTION',question:'"Lay your cards on the table" means:',options:['Be completely open and honest','Play a card game','Show your hand in poker only','Put things on a table'],correct:0,explanation:'"Lay your cards on the table" = be fully transparent about your intentions.',idiom:'LAY YOUR CARDS ON THE TABLE: be fully transparent'},
+      {qtype:'GRAMMAR QUESTION',question:'Which is correct?',options:['She knew she had to tell the truth.','She knew she have to tell the truth.','She knew she has to tell the truth.','She knew she telling the truth.'],correct:0,explanation:'After "knew" (past), use "had to" for obligation — not "have to" which is present tense.',idiom:null},
+    ];
+  }
+
+  storyIndex = 0;
+  document.getElementById('exLoading').style.display = 'none';
+  document.getElementById('exQuestion').style.opacity = '1';
+
+  // Show story first
+  document.getElementById('exQType').textContent = 'TODAY'S STORY';
+  document.getElementById('exQText').textContent = storyText;
+  document.getElementById('exQContext').textContent = '';
+  document.getElementById('exFeedback').classList.remove('visible');
+  document.getElementById('exOptionsWrap').innerHTML = '';
+
+  // Add "Read & Continue" button
+  const wrap = document.getElementById('exOptionsWrap');
+  const btn = document.createElement('button');
+  btn.className = 'ex-opt';
+  btn.textContent = '► I'VE READ IT — START QUESTIONS';
+  btn.style.borderColor = 'var(--neon3)';
+  btn.style.color = 'var(--neon3)';
+  btn.onclick = () => { wrap.innerHTML = ''; renderStoryQ(); };
+  wrap.appendChild(btn);
+}
+
+function renderStoryQ() {
+  const q = storyQuestions[storyIndex];
+  document.getElementById('exRoundLabel').textContent = 'Q ' + (storyIndex + 1) + '/4';
+  document.getElementById('exQType').textContent = q.qtype;
+  document.getElementById('exQText').textContent = q.question;
+  document.getElementById('exQContext').textContent = '';
+  document.getElementById('exFeedback').classList.remove('visible');
+
+  const wrap = document.getElementById('exOptionsWrap');
+  wrap.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'ex-opt';
+    b.textContent = ['A','B','C','D'][i] + '. ' + opt;
+    b.onclick = () => handleStoryAnswer(i, q, b, wrap);
+    wrap.appendChild(b);
+  });
+}
+
+function handleStoryAnswer(idx, q, btn, wrap) {
+  wrap.querySelectorAll('.ex-opt').forEach(b => b.disabled = true);
+  const ok = idx === q.correct;
+  btn.classList.add(ok ? 'correct' : 'wrong');
+  wrap.querySelectorAll('.ex-opt')[q.correct].classList.add('correct');
+
+  if (ok) { state.sessionCorrect++; state.totalCorrect++; }
+  state.sessionTotal++;
+
+  document.getElementById('fbVerdict').textContent = ok ? '✓ CORRECT!' : '✗ WRONG!';
+  document.getElementById('fbVerdict').className = 'fb-verdict ' + (ok ? 'correct' : 'wrong');
+  document.getElementById('fbExplanation').textContent = q.explanation;
+  document.getElementById('fbNative').textContent = '';
+  document.getElementById('fbNative').style.display = 'none';
+
+  if (q.idiom) {
+    document.getElementById('fbIdiomBox').style.display = 'block';
+    document.getElementById('fbIdiomText').textContent = q.idiom;
+    state.idiomsLearned++;
+    state.idiomsBank.push(q.idiom);
+  } else {
+    document.getElementById('fbIdiomBox').style.display = 'none';
+  }
+
+  document.getElementById('fbXP').textContent = ok ? '+20 XP' : '+5 XP';
+  addXP(ok ? 20 : 5);
+  document.getElementById('exFeedback').classList.add('visible');
+  document.getElementById('exFeedback').querySelector('.next-btn').onclick = storyNextQ;
+  if (!ok) state.sessionMirror = { before: q.question, after: wrap.querySelectorAll('.ex-opt')[q.correct].textContent.substring(3) };
+  saveState();
+}
+
+function storyNextQ() {
+  storyIndex++;
+  if (storyIndex >= storyQuestions.length) {
+    phaseComplete('World Story', 40);
+    return;
+  }
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exFeedback').classList.remove('visible');
+  renderStoryQ();
+}
+
+// ─── PHASE 3: GRAMMAR SPRINT ─────────────────────────
+let sprintQs = [], sprintIdx = 0, sprintScore = 0, sprintStreak = 0, sprintTime = 90, sprintTimer = null;
+
+async function launchGrammarSprint() {
+  showScreen('exerciseScreen');
+  document.getElementById('exTypeLabel').textContent = '⚡ PHASE 3 — GRAMMAR SPRINT';
+  document.getElementById('exRoundLabel').textContent = '90s';
+  document.getElementById('exWorldBadge').textContent = getWorldLabel();
+  document.getElementById('exFeedback').classList.remove('visible');
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exLoading').style.display = 'block';
+  document.getElementById('exQuestion').style.opacity = '0.3';
+  document.getElementById('patternAlert').classList.remove('visible');
+  sprintScore = 0; sprintStreak = 0; sprintIdx = 0; sprintTime = 90;
+
+  const topic = getWorldTopic();
+  const prompt = `${profileContext()} Topic: ${topic}.
+Generate 8 grammar sprint questions. Each is a sentence with ONE mistake Portuguese speakers typically make. Options: [correct fix, wrong fix 1, wrong fix 2, original wrong sentence].
+Return ONLY JSON array: [{"question":"wrong sentence","options":["correct","wrong1","wrong2","original"],"correct":0,"explanation":"brief: what mistake and why PT speakers make it"}]
+Focus on: articles, prepositions, tenses, subject-verb agreement, make/do, since/for, explain/discuss patterns. ONLY JSON array.`;
+
+  try {
+    const raw = await askClaude(prompt);
+    sprintQs = JSON.parse(raw);
+  } catch(e) {
+    sprintQs = [
+      {question:"She don't know the deadline.",options:["She doesn't know the deadline.","She not know the deadline.","She didn't knows it.","She don't know the deadline."],correct:0,explanation:"3rd person singular needs 'doesn't', not 'don't'."},
+      {question:"I am here since 3 hours.",options:["I've been here for 3 hours.","I am here for 3 hours.","I was here since 3 hours.","I am here since 3 hours."],correct:0,explanation:"'For' + duration. 'Since' + point in time. Use present perfect for ongoing actions."},
+      {question:"He made a very good work.",options:["He did a very good job.","He made a very good job.","He did a very good work.","He made a very good work."],correct:0,explanation:"'Do' a job (not 'make'). 'Work' is uncountable — no article 'a'."},
+      {question:"I have 25 years old.",options:["I am 25 years old.","I have 25 years.","I got 25 years.","I have 25 years old."],correct:0,explanation:"Age uses 'to be' in English. In PT you 'have' age — classic transfer."},
+      {question:"The informations are on the table.",options:["The information is on the table.","The informations is on the table.","The information are on the table.","The informations are on the table."],correct:0,explanation:"'Information' is uncountable — no plural, always singular verb."},
+      {question:"We discussed about the budget.",options:["We discussed the budget.","We talked over the budget.","We discussed over the budget.","We discussed about the budget."],correct:0,explanation:"'Discuss' never takes 'about'. Say 'discuss something' directly."},
+      {question:"She explained me the plan.",options:["She explained the plan to me.","She explained me about the plan.","She explained to me about the plan.","She explained me the plan."],correct:0,explanation:"'Explain' requires TO: explain something TO someone."},
+      {question:"I look forward to hear from you.",options:["I look forward to hearing from you.","I look forward to hear you.","I look forward hearing from you.","I look forward to hear from you."],correct:0,explanation:"'Look forward to' takes a gerund (-ing), not an infinitive."},
+    ];
+  }
+
+  document.getElementById('exLoading').style.display = 'none';
+  document.getElementById('exQuestion').style.opacity = '1';
+
+  // Add timer display
+  document.getElementById('exQType').textContent = 'GRAMMAR SPRINT — ' + sprintTime + 's LEFT | SCORE: 0';
+  startSprintTimer();
+  renderSprintQ();
+}
+
+function startSprintTimer() {
+  if (sprintTimer) clearInterval(sprintTimer);
+  sprintTimer = setInterval(() => {
+    sprintTime--;
+    document.getElementById('exRoundLabel').textContent = sprintTime + 's';
+    document.getElementById('exQType').textContent = 'SPRINT | SCORE: ' + sprintScore + (sprintStreak > 1 ? ' 🔥' + sprintStreak + 'x' : '');
+    if (sprintTime <= 0) { clearInterval(sprintTimer); endSprint(); }
+  }, 1000);
+}
+
+function renderSprintQ() {
+  if (sprintIdx >= sprintQs.length) { clearInterval(sprintTimer); endSprint(); return; }
+  const q = sprintQs[sprintIdx];
+  document.getElementById('exQText').textContent = q.question;
+  document.getElementById('exQContext').textContent = '← Spot the mistake, pick the fix';
+  document.getElementById('exFeedback').classList.remove('visible');
+
+  const wrap = document.getElementById('exOptionsWrap');
+  wrap.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const b = document.createElement('button');
+    b.className = 'ex-opt';
+    b.textContent = ['A','B','C','D'][i] + '. ' + opt;
+    b.onclick = () => handleSprintAnswer(i, q, b, wrap);
+    wrap.appendChild(b);
+  });
+}
+
+function handleSprintAnswer(idx, q, btn, wrap) {
+  wrap.querySelectorAll('.ex-opt').forEach(b => b.disabled = true);
+  const ok = idx === q.correct;
+  btn.classList.add(ok ? 'correct' : 'wrong');
+  wrap.querySelectorAll('.ex-opt')[q.correct].classList.add('correct');
+
+  if (ok) { sprintStreak++; sprintScore += 10 * (sprintStreak > 2 ? 2 : 1); state.sessionCorrect++; state.totalCorrect++; }
+  else { sprintStreak = 0; if (q.explanation) state.mistakePatterns.push(q.explanation.substring(0, 60)); }
+  state.sessionTotal++;
+
+  document.getElementById('fbVerdict').textContent = ok ? '✓ +' + (sprintStreak > 2 ? '20' : '10') + ' (SPRINT)' : '✗ No points';
+  document.getElementById('fbVerdict').className = 'fb-verdict ' + (ok ? 'correct' : 'wrong');
+  document.getElementById('fbExplanation').textContent = q.explanation;
+  document.getElementById('fbNative').style.display = 'none';
+  document.getElementById('fbIdiomBox').style.display = 'none';
+  document.getElementById('fbXP').textContent = ok ? '+10 XP' : '+2 XP';
+  addXP(ok ? 10 : 2);
+  document.getElementById('exFeedback').classList.add('visible');
+  document.getElementById('exFeedback').querySelector('.next-btn').onclick = sprintNextQ;
+  saveState();
+}
+
+function sprintNextQ() {
+  sprintIdx++;
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exFeedback').classList.remove('visible');
+  renderSprintQ();
+}
+
+function endSprint() {
+  clearInterval(sprintTimer); sprintTimer = null;
+  const bonus = Math.floor(sprintScore / 2);
+  addXP(bonus);
+  phaseComplete('Grammar Sprint', bonus);
+}
+
+// ─── PHASE 4: IDIOM DEEP DIVE ────────────────────────
+let idiomDiveList = [], idiomDiveIdx = 0;
+
+async function launchIdiomDive() {
+  showScreen('exerciseScreen');
+  document.getElementById('exTypeLabel').textContent = '💬 PHASE 4 — IDIOM DEEP DIVE';
+  document.getElementById('exRoundLabel').textContent = 'IDIOM 1/3';
+  document.getElementById('exWorldBadge').textContent = getWorldLabel();
+  document.getElementById('exFeedback').classList.remove('visible');
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exLoading').style.display = 'block';
+  document.getElementById('exQuestion').style.opacity = '0.3';
+  document.getElementById('patternAlert').classList.remove('visible');
+  idiomDiveIdx = 0;
+
+  const topic = getWorldTopic();
+  const known = state.idiomsBank.slice(-10).join(', ') || 'none yet';
+  const prompt = `${profileContext()} Topic: ${topic}. Already learned: ${known}.
+Generate 3 genuinely useful English idioms (NOT basic ones like "break a leg") for professional and social life. Ones not in the learned list.
+Return ONLY JSON array: [{"phrase":"the idiom","meaning":"clear explanation","origin":"brief origin","example1":"example in ${topic} context","example2":"example in another real context","usePrompt":"Task: write a sentence using this idiom about ${topic}"}]
+ONLY the JSON array.`;
+
+  try {
+    const raw = await askClaude(prompt);
+    idiomDiveList = JSON.parse(raw);
+  } catch(e) {
+    idiomDiveList = [
+      {phrase:'Hit the ground running',meaning:'Start with high energy and make immediate progress',origin:'Military — soldiers landing already in motion to fight',example1:'She hit the ground running in her new marketing role, pitching three ideas on day one.',example2:'The new CEO hit the ground running, cutting costs within the first week.',usePrompt:'Write about someone hitting the ground running in a work or life situation.'},
+      {phrase:'On the same page',meaning:'Sharing the same understanding or agreement about something',origin:'From literally reading the same page of a document',example1:"Before we launch the campaign, let's make sure we're all on the same page.",example2:"Are we on the same page about the budget for next quarter?",usePrompt:"Use 'on the same page' to describe a situation where alignment was important."},
+      {phrase:'The ball is in your court',meaning:'It is now your responsibility or turn to act',origin:"From tennis — the ball is literally on the opponent's side",example1:"I've sent the proposal. The ball is in your court now.",example2:'I gave them my best offer. The ball is in their court.',usePrompt:"Use 'the ball is in your court' in a professional or personal context."},
+    ];
+  }
+
+  document.getElementById('exLoading').style.display = 'none';
+  document.getElementById('exQuestion').style.opacity = '1';
+  renderIdiomDive();
+}
+
+function renderIdiomDive() {
+  const id = idiomDiveList[idiomDiveIdx];
+  document.getElementById('exRoundLabel').textContent = 'IDIOM ' + (idiomDiveIdx + 1) + '/3';
+  document.getElementById('exQType').textContent = '⭐ ' + id.phrase.toUpperCase();
+  document.getElementById('exQText').textContent = id.meaning + '
+
+' + id.origin;
+  document.getElementById('exQContext').textContent = '📌 ' + id.example1 + '
+📌 ' + id.example2;
+  document.getElementById('exFeedback').classList.remove('visible');
+
+  const wrap = document.getElementById('exOptionsWrap');
+  wrap.innerHTML = '';
+
+  // Show task + textarea
+  const task = document.createElement('div');
+  task.style.cssText = 'background:rgba(255,204,0,.05);border:1px solid var(--neon3);padding:12px;margin-bottom:10px;font-size:14px;color:var(--neon3);font-family:var(--pixel);font-size:8px;line-height:1.8;';
+  task.textContent = '✍ TASK: ' + id.usePrompt;
+  wrap.appendChild(task);
+
+  const ta = document.createElement('textarea');
+  ta.className = 'ex-textarea';
+  ta.id = 'idiomDiveTextarea';
+  ta.placeholder = 'Write your sentence using this idiom...';
+  ta.style.width = '100%';
+  wrap.appendChild(ta);
+
+  const sub = document.createElement('button');
+  sub.className = 'ex-submit';
+  sub.textContent = 'CHECK MY SENTENCE ►';
+  sub.onclick = () => submitIdiomDive(id, ta, sub);
+  wrap.appendChild(sub);
+}
+
+async function submitIdiomDive(id, ta, sub) {
+  const txt = ta.value.trim();
+  if (!txt) return;
+  sub.disabled = true;
+  document.getElementById('exLoading').style.display = 'block';
+
+  const prompt = `Student is practicing the idiom "${id.phrase}" (meaning: ${id.meaning}).
+They wrote: "${txt}"
+Evaluate if they used it correctly and naturally. Return ONLY JSON: {"correct":true/false,"explanation":"what was good or wrong","nativeVersion":"how a native would write this sentence"}`;
+
+  let result;
+  try {
+    const raw = await askClaude(prompt);
+    result = JSON.parse(raw);
+  } catch(e) {
+    result = { correct: true, explanation: 'Good attempt! Keep using it in real conversations.', nativeVersion: txt };
+  }
+
+  document.getElementById('exLoading').style.display = 'none';
+
+  const ok = result.correct;
+  if (ok) { state.sessionCorrect++; state.totalCorrect++; state.idiomsLearned++; state.idiomsBank.push(id.phrase + ': ' + id.meaning); }
+  else { state.sessionMirror = { before: txt, after: result.nativeVersion }; }
+  state.sessionTotal++;
+  addXP(ok ? 25 : 10);
+
+  document.getElementById('fbVerdict').textContent = ok ? '✓ NAILED IT!' : '✗ NOT QUITE';
+  document.getElementById('fbVerdict').className = 'fb-verdict ' + (ok ? 'correct' : 'wrong');
+  document.getElementById('fbExplanation').textContent = result.explanation;
+  document.getElementById('fbNative').textContent = '✓ Native: ' + result.nativeVersion;
+  document.getElementById('fbNative').style.display = 'block';
+  document.getElementById('fbIdiomBox').style.display = 'block';
+  document.getElementById('fbIdiomText').textContent = id.phrase + ' — ' + id.meaning;
+  document.getElementById('fbXP').textContent = ok ? '+25 XP' : '+10 XP';
+  document.getElementById('exFeedback').classList.add('visible');
+  document.getElementById('exFeedback').querySelector('.next-btn').onclick = idiomDiveNext;
+  saveState();
+}
+
+function idiomDiveNext() {
+  idiomDiveIdx++;
+  if (idiomDiveIdx >= idiomDiveList.length) {
+    phaseComplete('Idiom Deep Dive', 50);
+    return;
+  }
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exFeedback').classList.remove('visible');
+  renderIdiomDive();
+}
+
+// ─── PHASE 5: CONVERSATION SIM ───────────────────────
+let convoScenario = '', convoRole = '', convoHistory = [], convoExchangeIdx = 0;
+
+async function launchConvoSim() {
+  showScreen('exerciseScreen');
+  document.getElementById('exTypeLabel').textContent = '🎭 PHASE 5 — CONVERSATION SIM';
+  document.getElementById('exRoundLabel').textContent = 'EXCHANGE 1/5';
+  document.getElementById('exWorldBadge').textContent = getWorldLabel();
+  document.getElementById('exFeedback').classList.remove('visible');
+  document.getElementById('exOptionsWrap').innerHTML = '';
+  document.getElementById('exLoading').style.display = 'block';
+  document.getElementById('exQuestion').style.opacity = '0.3';
+  document.getElementById('patternAlert').classList.remove('visible');
+  convoHistory = []; convoExchangeIdx = 0;
+
+  const topic = getWorldTopic();
+  const prompt = `${profileContext()} Topic: ${topic}. World: ${getWorldLabel()}.
+Create a realistic adult conversation scenario. Return ONLY JSON: {"scenario":"2 sentences describing the situation and who the player talks to","role":"who you (Claude) will play","openingMessage":"the first natural message from the other person to open the conversation about ${topic}"}`;
+
+  try {
+    const raw = await askClaude(prompt);
+    const data = JSON.parse(raw);
+    convoScenario = data.scenario;
+    convoRole = data.role;
+    document.getElementById('exQType').textContent = '🎭 SCENARIO';
+    document.getElementById('exQText').textContent = convoScenario;
+    document.getElementById('exQContext').textContent = 'You are talking to: ' + convoRole;
+    convoHistory.push({ role: 'them', text: data.openingMessage });
+    renderConvoThread();
+  } catch(e) {
+    convoScenario = 'You are in a video call with an important client discussing campaign strategy.';
+    convoRole = 'Client';
+    document.getElementById('exQType').textContent = '🎭 SCENARIO';
+    document.getElementById('exQText').textContent = convoScenario;
+    document.getElementById('exQContext').textContent = 'You are talking to: ' + convoRole;
+    convoHistory.push({ role: 'them', text: "Hi! Great to connect. I've been looking at the numbers and I'm not fully convinced the current approach is working. Can we explore a different direction?" });
+    renderConvoThread();
+  }
+
+  document.getElementById('exLoading').style.display = 'none';
+  document.getElementById('exQuestion').style.opacity = '1';
+}
+
+function renderConvoThread() {
+  const wrap = document.getElementById('exOptionsWrap');
+  wrap.innerHTML = '';
+
+  // Thread
+  const thread = document.createElement('div');
+  thread.style.cssText = 'display:flex;flex-direction:column;gap:10px;margin-bottom:14px;';
+  convoHistory.forEach(msg => {
+    const div = document.createElement('div');
+    div.style.cssText = msg.role === 'them'
+      ? 'background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--neon4);padding:12px;font-size:14px;line-height:1.6;max-width:85%;align-self:flex-start;'
+      : 'background:rgba(0,255,204,.06);border:1px solid var(--neon);border-right:3px solid var(--neon);padding:12px;font-size:14px;line-height:1.6;max-width:85%;align-self:flex-end;';
+    div.textContent = (msg.role === 'them' ? convoRole + ': ' : 'You: ') + msg.text;
+    thread.appendChild(div);
+  });
+  wrap.appendChild(thread);
+
+  if (convoExchangeIdx < 5) {
+    // Input
+    const prompt = document.createElement('div');
+    prompt.style.cssText = 'font-family:var(--pixel);font-size:7px;color:var(--neon2);margin-bottom:7px;';
+    prompt.textContent = 'YOUR TURN — EXCHANGE ' + (convoExchangeIdx + 1) + '/5:';
+    wrap.appendChild(prompt);
+
+    const ta = document.createElement('textarea');
+    ta.className = 'ex-textarea';
+    ta.placeholder = 'Write your response naturally...';
+    ta.style.width = '100%';
+    wrap.appendChild(ta);
+
+    const sub = document.createElement('button');
+    sub.className = 'ex-submit';
+    sub.id = 'convoSubmitBtn';
+    sub.textContent = 'SEND ►';
+    sub.onclick = () => submitConvo(ta, sub);
+    wrap.appendChild(sub);
+  }
+}
+
+async function submitConvo(ta, sub) {
+  const txt = ta.value.trim();
+  if (!txt) return;
+  sub.disabled = true;
+  document.getElementById('exLoading').style.display = 'block';
+
+  convoHistory.push({ role: 'me', text: txt });
+  convoExchangeIdx++;
+  document.getElementById('exRoundLabel').textContent = 'EXCHANGE ' + (convoExchangeIdx + 1) + '/5';
+
+  const histStr = convoHistory.map(h => (h.role === 'them' ? convoRole : 'Player') + ': ' + h.text).join('
+');
+  const isLast = convoExchangeIdx >= 5;
+
+  const prompt = `You are playing "${convoRole}" in this scenario: ${convoScenario}. ${profileContext()}
+Conversation so far:
+${histStr}
+${isLast
+  ? `This is the FINAL exchange. Give a natural closing response as ${convoRole}, then grade ALL the player's messages.
+Return ONLY JSON: {"response":"...","grades":[{"exchange":1,"original":"player text","issue":"what was off or what was good","native":"how a native would say it","good":true/false}]}`
+  : `Continue naturally as ${convoRole}. Return ONLY JSON: {"response":"..."}`}`;
+
+  try {
+    const raw = await askClaude(prompt);
+    const data = JSON.parse(raw);
+    document.getElementById('exLoading').style.display = 'none';
+
+    convoHistory.push({ role: 'them', text: data.response });
+
+    if (isLast && data.grades) {
+      let goodCount = 0;
+      data.grades.forEach(g => {
+        if (g.good) goodCount++;
+        else { state.mistakePatterns.push((g.issue || '').substring(0, 60)); state.sessionMirror = { before: g.original, after: g.native }; }
+      });
+      state.sessionCorrect += goodCount;
+      state.sessionTotal += data.grades.length;
+      addXP(goodCount * 15);
+
+      // Show thread + grade
+      renderConvoThread();
+      document.getElementById('fbVerdict').textContent = goodCount + '/' + data.grades.length + ' EXCHANGES NATURAL';
+      document.getElementById('fbVerdict').className = 'fb-verdict ' + (goodCount >= 3 ? 'correct' : 'wrong');
+      document.getElementById('fbExplanation').textContent = data.grades.map((g, i) => `Exchange ${i+1}: ${g.issue}`).join('
+');
+      document.getElementById('fbNative').textContent = data.grades.filter(g => !g.good).map(g => '→ ' + g.native).join('
+');
+      document.getElementById('fbNative').style.display = 'block';
+      document.getElementById('fbIdiomBox').style.display = 'none';
+      document.getElementById('fbXP').textContent = '+' + (goodCount * 15) + ' XP';
+      document.getElementById('exFeedback').classList.add('visible');
+      document.getElementById('exFeedback').querySelector('.next-btn').onclick = () => phaseComplete('Conversation Sim', 60);
+    } else {
+      renderConvoThread();
+    }
+  } catch(e) {
+    document.getElementById('exLoading').style.display = 'none';
+    sub.disabled = false;
+    convoHistory.push({ role: 'them', text: 'That's an interesting perspective. Tell me more.' });
+    renderConvoThread();
+  }
+  saveState();
+}
+
+
+// ─── PHASE 6: ARCADE REWARD (DEDICATED) ─────────────
+const ARCADE_REWARD_GAMES = ['SNAKE','PONG','BREAKOUT','FLAPPY BIRD','DODGE','MEMORY MATCH','COLOUR RUSH','WHACK-A-MOLE','2048 LITE','GRAVITY FLIP','SURF RUN','PIXEL RACER','LAVA RISE','SIMON SAYS','BOUNCER'];
+let arcadeRewardScore = 0;
+let arcadeRewardTimer = null;
+let arcadeRewardTimeLeft = 120; // 2 minutes
+
+function launchArcadeReward() {
+  // Pick random game
+  const gameName = ARCADE_REWARD_GAMES[Math.floor(Math.random() * ARCADE_REWARD_GAMES.length)];
+  arcadeRewardScore = 0;
+  arcadeRewardTimeLeft = 120;
+
+  // Show arcade screen with special reward messaging
+  document.getElementById('arcadeGameName').textContent = '🏆 ' + gameName;
+  document.getElementById('arcadeScore').textContent = '0';
+  showScreen('arcadeScreen');
+  initArcadeGame(gameName);
+
+  // Override arcade controls for phase 6
+  const skipBtn = document.querySelector('.arcade-skip');
+  if (skipBtn) {
+    skipBtn.textContent = '✓ FINISH ARCADE — GO TO DEBRIEF';
+    skipBtn.onclick = () => {
+      stopArcade();
+      if (arcadeRewardTimer) clearInterval(arcadeRewardTimer);
+      const bonusXP = Math.min(60, Math.floor(arcadeRewardScore / 2));
+      addXP(bonusXP);
+      showToast('🎮 +' + bonusXP + ' ARCADE BONUS XP!');
+      launchDebrief();
+    };
+  }
+
+  // Countdown timer for arcade phase
+  if (arcadeRewardTimer) clearInterval(arcadeRewardTimer);
+  arcadeRewardTimer = setInterval(() => {
+    arcadeRewardTimeLeft--;
+    const scoreEl = document.getElementById('arcadeScore');
+    // Track arcade score from game
+    arcadeRewardScore = parseInt(scoreEl.textContent) || 0;
+    if (arcadeRewardTimeLeft <= 0) {
+      clearInterval(arcadeRewardTimer);
+      arcadeRewardTimer = null;
+      // Auto-advance to debrief after timer
+      stopArcade();
+      const bonusXP = Math.min(60, Math.floor(arcadeRewardScore / 2));
+      addXP(bonusXP);
+      showToast('🎮 TIME'S UP! +' + bonusXP + ' BONUS XP!');
+      launchDebrief();
+    }
+  }, 1000);
+
+  // Update score label to show it's the reward phase
+  const ctrlLabel = document.getElementById('arcadeCtrlLabel');
+  if (ctrlLabel) {
+    ctrlLabel.textContent = '🏆 PHASE 6 — EARN BONUS XP | TAP DONE WHEN READY';
+  }
+}
+
+// ─── DEBRIEF ─────────────────────────────────────────
+function launchDebrief() {
+  state.challengeDone = true;
+  state.streak++;
+  state.daysPlayed++;
+  state.villainHP = Math.max(0, state.villainHP - Math.floor(state.sessionCorrect * 3));
+  saveState();
+
+  // Populate results screen
+  const pct = state.sessionTotal > 0 ? Math.round((state.sessionCorrect / state.sessionTotal) * 100) : 0;
+  document.getElementById('resultsScore').textContent = pct + '%';
+  document.getElementById('resultsXP').textContent = '+' + state.sessionXP + ' XP EARNED';
+
+  const bd = document.getElementById('resultsBreakdown');
+  bd.innerHTML = `
+    <div class="rb-title">SESSION BREAKDOWN</div>
+    <div class="rb-item"><span>Correct answers</span><span class="rb-correct">${state.sessionCorrect}/${state.sessionTotal}</span></div>
+    <div class="rb-item"><span>Idioms learned</span><span class="rb-correct">+${state.idiomsLearned}</span></div>
+    <div class="rb-item"><span>XP earned</span><span class="rb-correct">+${state.sessionXP}</span></div>
+    <div class="rb-item"><span>Boss HP dealt</span><span class="rb-wrong">-${Math.floor(state.sessionCorrect * 3)}%</span></div>
+    <div class="rb-item"><span>Streak</span><span class="rb-correct">🔥 ${state.streak} days</span></div>`;
+
+  document.getElementById('mirrorBefore').textContent = state.sessionMirror.before ? '"' + state.sessionMirror.before + '"' : 'No major mistakes today!';
+  document.getElementById('mirrorAfter').textContent = state.sessionMirror.after || 'Clean session. Keep it up.';
+
+  // Patch results next btn to go to dash
+  document.querySelectorAll('.results-btn').forEach(b => { b.onclick = () => goToDash(); });
+
+  updateDash();
+  showScreen('resultsScreen');
+}
+
+// ─── PATCH: updateDash for 6 pips ────────────────────
+const _origUpdateDash = typeof updateDash !== 'undefined' ? updateDash : null;
+// Extend pip updates in existing updateDash
+const origUpdDash = updateDash;
+function updateDash() {
+  origUpdDash();
+  if (state.challengeDone) {
+    for (let i = 0; i <= 6; i++) {
+      const p = document.getElementById('pip' + i);
+      if (p) p.className = 'round-pip done';
+    }
+  }
+}
+
+console.log('NFB v2 Phase System loaded ✓');
+</script>
+</body>
+</html>
