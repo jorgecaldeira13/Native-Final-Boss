@@ -1561,12 +1561,13 @@ function updateDash() {
 
   // Challenge state
   if (state.challengeDone) {
-    document.getElementById('challengeBtn').textContent = '✓ CHALLENGE COMPLETE — COME BACK TOMORROW';
+    document.getElementById('challengeBtn').textContent = '✓ SESSION COMPLETE — COME BACK TOMORROW';
     document.getElementById('challengeBtn').disabled = true;
     document.getElementById('dailyDesc').textContent = 'You crushed it today. The boss felt that one.';
-    document.getElementById('pip0').className = 'round-pip done';
-    document.getElementById('pip1').className = 'round-pip done';
-    document.getElementById('pip2').className = 'round-pip done';
+    for (let i = 0; i <= 6; i++) {
+      const p = document.getElementById('pip' + i);
+      if (p) p.className = 'round-pip done';
+    }
   }
 }
 
@@ -1590,110 +1591,7 @@ let roundIndex = 0;
 let sessionCorrect = 0;
 let sessionResults = [];
 
-async function startChallenge() {
-  if (state.challengeDone) return;
-  roundIndex = 0;
-  sessionCorrect = 0;
-  sessionResults = [];
-  showScreen('exerciseScreen');
-  await loadExercise();
-}
-
-async function loadExercise() {
-  const type = EXERCISE_TYPES[roundIndex];
-  const world = WORLDS[state.currentWorld];
-
-  document.getElementById('exRoundLabel').textContent = `ROUND ${roundIndex+1}/3`;
-  document.getElementById('exTypeLabel').textContent = type === 'logical' ? '🧠 LOGICAL GAME' : type === 'grammar' ? '📝 GRAMMAR GAME' : '💬 IDIOM CHALLENGE';
-  document.getElementById('exWorldBadge').textContent = world.label;
-  document.getElementById('exFeedback').classList.remove('visible');
-  document.getElementById('exOptionsWrap').innerHTML = '';
-  document.getElementById('exInputWrap').style.display = 'none';
-  document.getElementById('exLoading').style.display = 'block';
-  document.getElementById('exQuestion').style.opacity = '0.3';
-  document.getElementById('patternAlert').classList.remove('visible');
-
-  const topic = world.topics[Math.floor(Math.random() * world.topics.length)];
-  const weakness = state.profile.weakness;
-  const level = state.profile.level;
-  const recentMistakes = state.mistakePatterns.slice(-3).join(', ') || 'none yet';
-
-  const prompt = `You are an English coach for a Portuguese native speaker working in English 70% of the day.
-
-Player profile:
-- Level: ${level}
-- Main weakness: ${weakness}
-- Recent mistake patterns: ${recentMistakes}
-- World/topic: ${topic}
-- Exercise type: ${type}
-
-Generate a ${type} English exercise about "${topic}". Return ONLY valid JSON:
-
-${type === 'logical' ? `{
-  "type": "logical",
-  "qtype": "WHAT WOULD A NATIVE SAY?",
-  "question": "Describe a situation (2-3 sentences) in the context of ${topic}. End with: What would a native English speaker say here?",
-  "context": "Brief scenario context",
-  "options": ["Option A — natural native phrasing", "Option B — Portuguese-influenced translation", "Option C — too formal/textbook", "Option D — another plausible wrong answer"],
-  "correct": 0,
-  "explanation": "Why option A is correct and why the others are wrong. Be specific about the Portuguese translation pattern.",
-  "nativeVersion": "The correct answer restated naturally",
-  "idiom": "One native idiom or expression used in this context with its meaning",
-  "patternWarning": "If this exposes a common PT→EN mistake, name it briefly"
-}` : type === 'grammar' ? `{
-  "type": "grammar",
-  "qtype": "SPOT THE MISTAKE",
-  "question": "A sentence with exactly one grammar mistake that Portuguese speakers typically make. The sentence should be about ${topic}.",
-  "context": "Why this mistake is common for Portuguese speakers",
-  "options": ["Corrected version", "Wrong fix — different mistake", "Wrong fix — overcorrection", "Original wrong sentence (no change)"],
-  "correct": 0,
-  "explanation": "What the mistake was, why it happens when translating from Portuguese, and the grammar rule.",
-  "nativeVersion": "The fully correct sentence",
-  "idiom": null,
-  "patternWarning": "Name this grammar pattern briefly"
-}` : `{
-  "type": "idiom",
-  "qtype": "DECODE THE NATIVE",
-  "question": "Use this idiom naturally in a sentence about ${topic}: choose a real, useful English idiom. Then ask what it means.",
-  "context": "The full sentence using the idiom in context",
-  "options": ["Correct meaning", "Plausible wrong meaning", "Another wrong meaning", "Literal translation (always wrong)"],
-  "correct": 0,
-  "explanation": "What the idiom means, its origin, and when to use it. Give a second example sentence.",
-  "nativeVersion": "How to use this idiom yourself in the context of ${topic}",
-  "idiom": "IDIOM NAME: meaning and usage tip",
-  "patternWarning": null
-}`}
-
-Rules: Make it intelligent, not infantile. Use real situations. For idiom exercises, pick idioms that are genuinely useful in professional or social life. Return ONLY JSON, no markdown.`;
-
-  try {
-    const res = await fetch('/.netlify/functions/claude', {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-        },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await res.json();
-    const raw = data.content.find(b => b.type === 'text')?.text || '';
-    const clean = raw.replace(/```json|```/g,'').trim();
-    currentExercise = JSON.parse(clean);
-    renderExercise(currentExercise);
-  } catch(e) {
-    console.error(e);
-    // Fallback exercise
-    currentExercise = getFallbackExercise(type, topic);
-    renderExercise(currentExercise);
-  } finally {
-    document.getElementById('exLoading').style.display = 'none';
-    document.getElementById('exQuestion').style.opacity = '1';
-  }
-}
-
+async 
 function getFallbackExercise(type, topic) {
   if (type === 'idiom') return {
     type:'idiom', qtype:'DECODE THE NATIVE',
@@ -2613,8 +2511,7 @@ function updatePhasePips(active) {
   }
 }
 
-// Override startChallenge to use phase system
-const _origStartChallenge = typeof startChallenge !== 'undefined' ? startChallenge : null;
+// Phase system startChallenge (overrides v1)
 function startChallenge() {
   if (state.challengeDone) return;
   phaseIndex = 0;
@@ -3360,19 +3257,6 @@ function launchDebrief() {
   showScreen('resultsScreen');
 }
 
-// ─── PATCH: updateDash for 6 pips ────────────────────
-const _origUpdateDash = typeof updateDash !== 'undefined' ? updateDash : null;
-// Extend pip updates in existing updateDash
-const origUpdDash = updateDash;
-function updateDash() {
-  origUpdDash();
-  if (state.challengeDone) {
-    for (let i = 0; i <= 6; i++) {
-      const p = document.getElementById('pip' + i);
-      if (p) p.className = 'round-pip done';
-    }
-  }
-}
 
 console.log('NFB v2 Phase System loaded ✓');
 </script>
