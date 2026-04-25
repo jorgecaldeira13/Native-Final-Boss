@@ -1321,6 +1321,13 @@ let state = {
   sessionMirror: { before: '', after: '' },
 };
 
+// Phase system variables - declared here to avoid TDZ errors
+let phaseIndex = 0;
+let arcadeReturnToPhase = null;
+let sessionPhaseXP = 0;
+let phaseSessionResults = [];
+let activePhaseData = {};
+
 const WORLDS = {
   briefing: { label: '🏢 THE BRIEFING ROOM', topics: ['marketing', 'copywriting', 'client emails', 'strategy meetings', 'campaign briefs'] },
   lineup: { label: '🌊 THE LINEUP', topics: ['surfing', 'outdoor activities', 'weather', 'sport', 'travel'] },
@@ -1595,7 +1602,6 @@ let roundIndex = 0;
 let sessionCorrect = 0;
 let sessionResults = [];
 
-async 
 function getFallbackExercise(type, topic) {
   if (type === 'idiom') return {
     type:'idiom', qtype:'DECODE THE NATIVE',
@@ -2471,11 +2477,7 @@ const WORLD_DATA = {
   boss:{label:'💀 BOSS DOOR',topics:['advanced idioms','complex grammar','native fluency']},
 };
 
-let phaseIndex = 0;
-let arcadeReturnToPhase = null;
-let sessionPhaseXP = 0;
-let phaseSessionResults = [];
-let activePhaseData = {};
+
 
 // World helper
 function getWorldTopic() {
