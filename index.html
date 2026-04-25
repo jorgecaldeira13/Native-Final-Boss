@@ -1667,9 +1667,11 @@ ${type === 'logical' ? `{
 Rules: Make it intelligent, not infantile. Use real situations. For idiom exercises, pick idioms that are genuinely useful in professional or social life. Return ONLY JSON, no markdown.`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/.netlify/functions/claude', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+          'Content-Type': 'application/json',
+        },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -2587,9 +2589,11 @@ function profileContext() {
 
 // Claude API helper
 async function askClaude(prompt) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+  const res = await fetch('/.netlify/functions/claude', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+          'Content-Type': 'application/json',
+        },
     body: JSON.stringify({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1000,
