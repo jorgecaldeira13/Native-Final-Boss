@@ -1315,6 +1315,10 @@ let state = {
   challengeRound: 0,
   challengeDone: false,
   arcadeXP: 0,
+  sessionXP: 0,
+  sessionCorrect: 0,
+  sessionTotal: 0,
+  sessionMirror: { before: '', after: '' },
 };
 
 const WORLDS = {
@@ -2697,7 +2701,7 @@ ONLY the JSON.`;
   } catch(e) {
     storyText = 'The campaign was falling apart. Sarah knew she had to bite the bullet and tell the client the truth. She cut to the chase in the meeting — no fluff, no spin. The client actually appreciated her directness and they got back on track. Sometimes the best strategy is to just lay your cards on the table.';
     storyQuestions = [
-      {qtype:'IDIOM QUESTION',question:'What does "bite the bullet" mean in this story?',options:['Do something difficult you've been avoiding','Eat something sharp','Shoot a weapon','Be very angry'],correct:0,explanation:'"Bite the bullet" means to do something difficult or painful that cannot be avoided.',idiom:'BITE THE BULLET: force yourself through something hard'},
+      {qtype:'IDIOM QUESTION',question:'What does "bite the bullet" mean in this story?',options:['Do something difficult you have been avoiding','Eat something sharp','Shoot a weapon','Be very angry'],correct:0,explanation:'"Bite the bullet" means to do something difficult or painful that cannot be avoided.',idiom:'BITE THE BULLET: force yourself through something hard'},
       {qtype:'IDIOM QUESTION',question:'What does "cut to the chase" mean?',options:['Get directly to the important point','Run fast','Chase someone','Start from the beginning'],correct:0,explanation:'"Cut to the chase" = skip the filler and get to the main point. From film editing.',idiom:'CUT TO THE CHASE: skip the fluff, get to the point'},
       {qtype:'IDIOM QUESTION',question:'"Lay your cards on the table" means:',options:['Be completely open and honest','Play a card game','Show your hand in poker only','Put things on a table'],correct:0,explanation:'"Lay your cards on the table" = be fully transparent about your intentions.',idiom:'LAY YOUR CARDS ON THE TABLE: be fully transparent'},
       {qtype:'GRAMMAR QUESTION',question:'Which is correct?',options:['She knew she had to tell the truth.','She knew she have to tell the truth.','She knew she has to tell the truth.','She knew she telling the truth.'],correct:0,explanation:'After "knew" (past), use "had to" for obligation — not "have to" which is present tense.',idiom:null},
@@ -2709,7 +2713,7 @@ ONLY the JSON.`;
   document.getElementById('exQuestion').style.opacity = '1';
 
   // Show story first
-  document.getElementById('exQType').textContent = 'TODAY'S STORY';
+  document.getElementById('exQType').textContent = 'TODAY\'S STORY';
   document.getElementById('exQText').textContent = storyText;
   document.getElementById('exQContext').textContent = '';
   document.getElementById('exFeedback').classList.remove('visible');
@@ -2719,7 +2723,7 @@ ONLY the JSON.`;
   const wrap = document.getElementById('exOptionsWrap');
   const btn = document.createElement('button');
   btn.className = 'ex-opt';
-  btn.textContent = '► I'VE READ IT — START QUESTIONS';
+  btn.textContent = '► I\'VE READ IT — START QUESTIONS';
   btn.style.borderColor = 'var(--neon3)';
   btn.style.color = 'var(--neon3)';
   btn.onclick = () => { wrap.innerHTML = ''; renderStoryQ(); };
@@ -2940,11 +2944,8 @@ function renderIdiomDive() {
   const id = idiomDiveList[idiomDiveIdx];
   document.getElementById('exRoundLabel').textContent = 'IDIOM ' + (idiomDiveIdx + 1) + '/3';
   document.getElementById('exQType').textContent = '⭐ ' + id.phrase.toUpperCase();
-  document.getElementById('exQText').textContent = id.meaning + '
-
-' + id.origin;
-  document.getElementById('exQContext').textContent = '📌 ' + id.example1 + '
-📌 ' + id.example2;
+  document.getElementById('exQText').textContent = id.meaning + ' — ' + id.origin;
+  document.getElementById('exQContext').textContent = '📌 ' + id.example1 + ' | 📌 ' + id.example2;
   document.getElementById('exFeedback').classList.remove('visible');
 
   const wrap = document.getElementById('exOptionsWrap');
@@ -3112,8 +3113,7 @@ async function submitConvo(ta, sub) {
   convoExchangeIdx++;
   document.getElementById('exRoundLabel').textContent = 'EXCHANGE ' + (convoExchangeIdx + 1) + '/5';
 
-  const histStr = convoHistory.map(h => (h.role === 'them' ? convoRole : 'Player') + ': ' + h.text).join('
-');
+  const histStr = convoHistory.map(h => (h.role === 'them' ? convoRole : 'Player') + ': ' + h.text).join(' | ');
   const isLast = convoExchangeIdx >= 5;
 
   const prompt = `You are playing "${convoRole}" in this scenario: ${convoScenario}. ${profileContext()}
@@ -3145,10 +3145,8 @@ Return ONLY JSON: {"response":"...","grades":[{"exchange":1,"original":"player t
       renderConvoThread();
       document.getElementById('fbVerdict').textContent = goodCount + '/' + data.grades.length + ' EXCHANGES NATURAL';
       document.getElementById('fbVerdict').className = 'fb-verdict ' + (goodCount >= 3 ? 'correct' : 'wrong');
-      document.getElementById('fbExplanation').textContent = data.grades.map((g, i) => `Exchange ${i+1}: ${g.issue}`).join('
-');
-      document.getElementById('fbNative').textContent = data.grades.filter(g => !g.good).map(g => '→ ' + g.native).join('
-');
+      document.getElementById('fbExplanation').textContent = data.grades.map((g, i) => `Exchange ${i+1}: ${g.issue}`).join(' | ');
+      document.getElementById('fbNative').textContent = data.grades.filter(g => !g.good).map(g => '→ ' + g.native).join(' | ');
       document.getElementById('fbNative').style.display = 'block';
       document.getElementById('fbIdiomBox').style.display = 'none';
       document.getElementById('fbXP').textContent = '+' + (goodCount * 15) + ' XP';
@@ -3160,7 +3158,7 @@ Return ONLY JSON: {"response":"...","grades":[{"exchange":1,"original":"player t
   } catch(e) {
     document.getElementById('exLoading').style.display = 'none';
     sub.disabled = false;
-    convoHistory.push({ role: 'them', text: 'That's an interesting perspective. Tell me more.' });
+    convoHistory.push({ role: 'them', text: 'That is an interesting perspective. Tell me more.' });
     renderConvoThread();
   }
   saveState();
@@ -3213,7 +3211,7 @@ function launchArcadeReward() {
       stopArcade();
       const bonusXP = Math.min(60, Math.floor(arcadeRewardScore / 2));
       addXP(bonusXP);
-      showToast('🎮 TIME'S UP! +' + bonusXP + ' BONUS XP!');
+      showToast('🎮 TIME IS UP! +' + bonusXP + ' BONUS XP!');
       launchDebrief();
     }
   }, 1000);
